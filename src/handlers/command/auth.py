@@ -39,11 +39,11 @@ async def process_age(message: Message, state: FSMContext) -> None:
     await state.update_data(age=message)
     await state.set_state(AuthForm.gender)
     masculine_button = InlineKeyboardButton(
-        text='мужчина',
+        text='Мужчина',
         callback_data='masculine',
     )
     feminine_button = InlineKeyboardButton(
-        text='женщина',
+        text='Женщина',
         callback_data='feminine',
     )
     markup = InlineKeyboardMarkup(
