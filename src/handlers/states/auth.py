@@ -7,6 +7,7 @@ class AuthGroup(StatesGroup):
 
 
 class AuthForm(StatesGroup):
+    photo = State()
     name = State()
     age = State()
     gender = State()
@@ -14,3 +15,4 @@ class AuthForm(StatesGroup):
     filter_by_age = State()
     filter_by_gender = State()
     filter_by_description = State()
+    photo = State()

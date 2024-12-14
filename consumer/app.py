@@ -1,10 +1,13 @@
 import msgpack
+import logging
 from consumer.handlers.form import handle_event_form
 from consumer.schema.form import FormMessage
-from consumer.storage.rabbit import channel_pool
-
+from storage.rabbit import channel_pool
+from src.logger import LOGGING_CONFIG, logger
 
 async def start_consumer() -> None:
+    logging.config.dictConfig(LOGGING_CONFIG)
+    logger.info('Consumer starting...')
     queue_name = 'user_messages'
     async with channel_pool.acquire() as channel:
         await channel.set_qos(prefetch_count=10)
@@ -15,5 +18,11 @@ async def start_consumer() -> None:
             async for message in queue_iter:
                 async with message.process():
                     body: FormMessage = msgpack.unpackb(message.body)
+                    print(f'')
                     if body['event'] == 'user_form':
+                        logger.info(f'User: {message.from_user} is filling out the form.')
                         await handle_event_form(body)
+                    elif body['event'] == 'user_recommendations':
+                        # TODO: использовать хэндлер для рекоммендаций
+                        pass
+    logger.info('Consumer stopping...')

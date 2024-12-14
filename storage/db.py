@@ -1,10 +1,8 @@
 from uuid import uuid4
-
 from asyncpg import Connection
-from sqlalchemy import AsyncAdaptedQueuePool
+from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from typing_extensions import AsyncGenerator
-
 from config.settings import settings
 
 
@@ -16,17 +14,16 @@ class CConnection(Connection):
 def create_engine() -> AsyncEngine:
     return create_async_engine(
         settings.db_url,
-        poolclass=AsyncAdaptedQueuePool,
+        poolclass=NullPool,
         connect_args={
             'connection_class': CConnection,
+            'statement_cache_size': 0,
+            'prepared_statement_cache_size': 0,
         },
-        # 'pool_recycle': 3600,
-        # 'pool_size': 10,
-        # 'max_overflow': 30,
     )
 
 
-def create_session_maker(_engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
+def create_session(_engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
     return async_sessionmaker(
         bind=_engine,
         class_=AsyncSession,
@@ -35,8 +32,8 @@ def create_session_maker(_engine: AsyncEngine) -> async_sessionmaker[AsyncSessio
     )
 
 
-engine = create_engine()  # connect to db
-async_session = create_session_maker(engine)  # способы управления моделями внутри питона
+engine = create_engine()
+async_session = create_session(engine)
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:

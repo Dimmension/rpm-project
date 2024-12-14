@@ -1,3 +1,5 @@
 .env
 **pycache**
 venv
+minio/certs
+minio/data

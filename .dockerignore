@@ -1,3 +1,5 @@
 venv
 .git
 __pycache__
+minio/certs
+minio/data

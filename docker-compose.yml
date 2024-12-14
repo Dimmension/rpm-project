@@ -1,5 +1,5 @@
-version: '0.1'
-
+version: '0.4'
+name: 'rpm_rpoject'
 services:
   rabbitmq:
     image: rabbitmq:3.13.7-management
@@ -11,17 +11,77 @@ services:
     image: redis:6.2.4
     ports:
       - "6379:6379"
-  
+
   db:
     image: postgres:16.5
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: postgres
     ports:
-      - "5432:5432"
+      - "5432:5432" 
     command: [ "postgres", "-c", "log_statement=all", "-c", "log_destination=stderr" ]
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "postgres" ]
+      test: [ "CMD", "pg_isready", "-U", "test", "-d", "postgres" ]
       interval: 0.5s
       retries: 30
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./minio/data:/data
+      - ./minio/certs:/certs
     environment:
-      POSTGRES_DB: "postgres"
-      POSTGRES_USER: "test"
-      POSTGRES_PASSWORD: "test"
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ACCESS_KEY: miniotest
+      MINIO_SECRET_KEY: miniotest
+      MINIO_SCHEME: https
+      SSL_CERT_FILE: /certs/public.crt
+    command: server --console-address ":9001" /data --certs-dir /certs
+  producer:
+    build: .
+    command: python3 src/app.py
+    environment:
+      - PYTHONPATH=.
+    volumes:
+      - producer-data:/code/src
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+      - minio
+    stop_signal: SIGINT
+
+  consumer:
+    build: .
+    command: python3 consumer
+    environment:
+      - PYTHONPATH=.
+    volumes:
+      # - consumer-data:/code/consumer
+      - .:/code
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+      - minio
+    stop_signal: SIGINT
+
+volumes:
+  producer-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./src
+
+  consumer-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./consumer
