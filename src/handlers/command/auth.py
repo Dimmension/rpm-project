@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 import msgpack
 
 from consumer.schema.form import FormMessage
-from consumer.schema.recommendation import RecMessage
+from consumer.schema.recommendation import RecommendMessage
 from src.handlers import buttons
 from src.handlers.states.auth import AuthForm, AuthGroup
 from src.handlers.command.router import router
@@ -215,9 +215,9 @@ async def _process_filter_by_description(message: Message, state: FSMContext) ->
                 ),
             ),
             msgpack.packb(
-                RecMessage(
-                    event='user_recommendations',
-                    action='get_recommendations',
+                RecommendMessage(
+                    event='recommendations',
+                    action='get_recommends',
                     user_id=message.from_user.id,
                 )
             ),

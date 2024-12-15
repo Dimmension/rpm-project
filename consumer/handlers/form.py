@@ -1,22 +1,26 @@
-from sqlalchemy import insert
 
-from model.user import User
+import random
+from faker import Faker
+from recommend_system.chroma import chroma_manager
 from consumer.schema.form import FormMessage
-from storage.db import async_session
 
+faker = Faker()
 
-async def handle_event_form(message: FormMessage):
+def handle_event_form(message: FormMessage):
     if message['action'] == 'send_form':
-        async with async_session() as db:
-            user_data = {
-                field: field_data
-                for field, field_data in message.items()
-                if field not in {'user_id', 'action', 'event'}
+        for i in range(10):
+            fake = {
+                'event': 'user_form', 
+                'action': 'send_form',
+                'user_id': i,
+                'name': faker.name(),
+                'age': random.randint(18, 80),
+                'gender': random.choice(['мужчина', 'женщина']),
+                'description': faker.text(max_nb_chars=200),
+                'filter_by_age': random.randint(18, 80),
+                'filter_by_gender': faker.text(max_nb_chars=200),
+                'filter_by_description': faker.text(max_nb_chars=200),
             }
-            user_data['id'] = message['user_id']
+            chroma_manager.add_to_collection(fake)
+        chroma_manager.add_to_collection(message)
 
-            await db.execute(insert(User).values(**user_data))
-            await db.commit()
-
-    elif message['action'] == 'change_form':
-        pass

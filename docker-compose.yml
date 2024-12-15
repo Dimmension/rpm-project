@@ -42,33 +42,53 @@ services:
       MINIO_SCHEME: https
       SSL_CERT_FILE: /certs/public.crt
     command: server --console-address ":9001" /data --certs-dir /certs
-  producer:
-    build: .
-    command: python3 src/app.py
-    environment:
-      - PYTHONPATH=.
+  
+  chromadb:
+    image: chromadb/chroma:0.5.7
+    container_name: chromadb
     volumes:
-      - producer-data:/code/src
-    depends_on:
-      - db
-      - redis
-      - rabbitmq
-      - minio
-    stop_signal: SIGINT
+      - ./chromadb:/chroma/chroma
+    command: "--workers 1 --host 0.0.0.0 --port 8000 --proxy-headers --log-config chromadb/log_config.yml --timeout-keep-alive 30"
+    environment:
+      - IS_PERSISTENT=TRUE
+    restart: unless-stopped
+    ports:
+      - "4810:8000"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
 
-  consumer:
-    build: .
-    command: python3 consumer
-    environment:
-      - PYTHONPATH=.
-    volumes:
-      - consumer-data:/code/consumer
-    depends_on:
-      - db
-      - redis
-      - rabbitmq
-      - minio
-    stop_signal: SIGINT
+  # producer:
+  #   build: .
+  #   command: python3 src/app.py
+  #   environment:
+  #     - PYTHONPATH=.
+  #   volumes:
+  #     - producer-data:/code/src
+  #   depends_on:
+  #     - db
+  #     - redis
+  #     - rabbitmq
+  #     - minio
+  #   stop_signal: SIGINT
+
+  # consumer:
+  #   build: .
+  #   command: python3 consumer
+  #   environment:
+  #     - PYTHONPATH=.
+  #   volumes:
+  #     - consumer-data:/code/consumer
+  #   depends_on:
+  #     - db
+  #     - redis
+  #     - rabbitmq
+  #     - minio
+  #   stop_signal: SIGINT
 
 volumes:
   producer-data:
