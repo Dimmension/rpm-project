@@ -1,6 +1,9 @@
 import asyncio
 import logging.config
 from typing import AsyncGenerator
+import logging.config
+
+from consumer.logger import LOGGING_CONFIG, logger
 
 from fastapi import FastAPI
 from consumer.app import start_consumer

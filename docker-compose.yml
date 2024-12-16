@@ -62,7 +62,8 @@ services:
     environment:
       - PYTHONPATH=.
     volumes:
-      - consumer-data:/code/consumer
+      # - consumer-data:/code/consumer
+      - .:/code
     depends_on:
       - db
       - redis

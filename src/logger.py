@@ -8,6 +8,7 @@ from starlette_context.errors import ContextDoesNotExistError
 from starlette_context.header_keys import HeaderKeys
 
 with open('config/logging.conf.yml', 'r') as f:
+
     LOGGING_CONFIG = yaml.full_load(f)
 
 class ConsoleFormatter(logging.Formatter):
@@ -19,4 +20,5 @@ class ConsoleFormatter(logging.Formatter):
         return super().format(record)
 
 
-logger = logging.getLogger('producer_logger')
+# logger = logging.getLogger('producer_logger')
+logger = logging.getLogger('backend_logger')

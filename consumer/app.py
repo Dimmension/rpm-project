@@ -5,6 +5,7 @@ from consumer.schema.form import FormMessage
 from storage.rabbit import channel_pool
 from logger import logger, LOGGING_CONFIG
 
+
 async def start_consumer() -> None:
     logging.config.dictConfig(LOGGING_CONFIG)
     logger.info('Consumer starting...')
@@ -20,6 +21,7 @@ async def start_consumer() -> None:
                     body: FormMessage = msgpack.unpackb(message.body)
                     print(f'')
                     if body['event'] == 'user_form':
+                        logger.info(f'User: {message.from_user} is filling out the form.')
                         await handle_event_form(body)
                     elif body['event'] == 'user_recommendations':
                         # TODO: использовать хэндлер для рекоммендаций
