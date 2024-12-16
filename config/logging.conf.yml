@@ -12,9 +12,9 @@ handlers:
   console_handler_consumer:
     class: logging.StreamHandler
     formatter: console_formatter_consumer
-  console_handler_producer:
-    class: logging.StreamHandler
-    formatter: console_formatter_producer
+  # console_handler_producer:
+  #   class: logging.StreamHandler
+  #   formatter: console_formatter_producer
 
 root:
   level: INFO
@@ -28,10 +28,10 @@ loggers:
     level: INFO
     propagate: no
     handlers: [console_handler_consumer]
-  'producer_logger':
-    level: INFO
-    propagate: no
-    handlers: [console_handler_producer]
+  # 'producer_logger':
+  #   level: INFO
+  #   propagate: no
+  #   handlers: [console_handler_producer]
   'uvicorn':
     level: INFO
     propagate: yes
