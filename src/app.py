@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 import uvicorn
+import logging
 
 from fastapi import FastAPI
 from starlette_context import plugins
@@ -13,13 +14,16 @@ from config.settings import settings
 from src.api.tg.router import router as tg_router
 from src.bot import dp, bot
 from src.bg_tasks import background_tasks
-
+from logger import logger, LOGGING_CONFIG
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
+    logging.config.dictConfig(LOGGING_CONFIG)
+    logger.info('Starting producer lifespan')
     wh_info = await bot.get_webhook_info()
     if wh_info.url != settings.BOT_WEBHOOK_URL:
         await bot.set_webhook(settings.BOT_WEBHOOK_URL)
+        logger.info('--Webhook initialized--')
 
     yield
 
@@ -44,7 +48,6 @@ async def start_pooling():
     await bot.delete_webhook()
     await dp.start_polling(bot)
 
-
 if __name__ == '__main__':
     if settings.BOT_WEBHOOK_URL:
         uvicorn.run(
@@ -54,5 +57,7 @@ if __name__ == '__main__':
             port=8000,
             workers=1,
         )
+        logger.info('Bot started on Webhook')
     else:
         asyncio.run(start_pooling())
+        logger.info('Bot started on polling')

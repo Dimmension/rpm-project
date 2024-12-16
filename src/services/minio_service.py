@@ -1,14 +1,15 @@
+# TODO: transfer to nginx
+import logging
 from minio import Minio
 from minio.error import S3Error
 from io import BytesIO
-
-# Initialize MinIO client
+from src.logger import logger, LOGGING_CONFIG
 minio_client = Minio(
     #'host.docker.internal:9000'
-    'minio:9000',  # Replace with your MinIO server URL
+    'minio:9000',
     access_key='minioadmin',
     secret_key='minioadmin',
-    secure=False  # Set to False if your MinIO server doesn't use HTTPS
+    secure=False
 )
 
 async def upload_photo(bucket_name, object_name, photo_bytes):
@@ -20,13 +21,15 @@ async def upload_photo(bucket_name, object_name, photo_bytes):
         object_name (str): The name of the object (file) to save in the bucket.
         photo_bytes (bytes): The photo content as bytes.
     """
+    logging.config.dictConfig(LOGGING_CONFIG)
     try:
-        # Ensure the bucket exists
         if not minio_client.bucket_exists(bucket_name):
             minio_client.make_bucket(bucket_name)
+            logger.info('Bucket with given was not found, created new one.')
 
         # Upload the photo as a stream
-        print(f"Uploading {object_name} to bucket '{bucket_name}'...")
+        # print(f"Uploading {object_name} to bucket '{bucket_name}'...")
+        logger.info(f'Uploading {object_name} to bucket - {bucket_name}...')
         minio_client.put_object(
             bucket_name = bucket_name,
             object_name = object_name,
@@ -34,12 +37,13 @@ async def upload_photo(bucket_name, object_name, photo_bytes):
             length = len(photo_bytes),
             content_type = 'image/jpeg'  # Adjust MIME type if needed
         )
-        print('Upload successful!')
+        logger.info('Upload successful!')
     except S3Error as e:
-        print(f'Error occurred: {e}')
+        logger.warning(f'Error occurred: {e}')
         return
 
 async def get_photo(bucket_name, object_name, download_path):
+    # TODO change from downloading to path, to not downloading at all
     """
     Fetch a photo from a MinIO bucket and save it locally.
 
@@ -49,13 +53,13 @@ async def get_photo(bucket_name, object_name, download_path):
         download_path (str): Local path to save the downloaded file.
     """
     try:
-        print(f"Downloading {object_name} from bucket '{bucket_name}'...")
+        logger.info(f"Downloading {object_name} from bucket '{bucket_name}'...")
         # Use MinIO client to fetch the object
         minio_client.fget_object(
             bucket_name=bucket_name,
             object_name=object_name,
             file_path=download_path
         )
-        print(f'Downloaded {object_name} to {download_path}')
+        logger.info(f'Downloaded {object_name} to {download_path}')
     except S3Error as e:
-        print(f'Error occurred: {e}')
+        logger.info(f'Error occurred: {e}')
