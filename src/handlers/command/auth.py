@@ -2,7 +2,7 @@ from aiogram import F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup
 from aiogram.fsm.context import FSMContext
 import msgpack
-
+import logging
 from consumer.schema.form import FormMessage
 from consumer.schema.recommendation import RecMessage
 from src.handlers import buttons
@@ -14,6 +14,8 @@ from src.utils import validators
 
 from storage.rabbit import send_msg
 from storage import consts
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 @router.callback_query(F.data == buttons.AUTH_CALLBACK_MSG, AuthGroup.no_authorized)
 async def auth(callback: CallbackQuery, state: FSMContext) -> None:
@@ -36,6 +38,7 @@ async def process_photo(message: Message, state: FSMContext) -> None:
 
         await upload_photo('main', file_name, file_bytes.getvalue())
         await state.update_data(photo=file_name)
+        await state.update_data(message_user_id=message.from_user.id)
 
         await state.set_state(AuthForm.name)
         await message.answer('*Введите имя')
@@ -200,7 +203,6 @@ async def _process_filter_by_description(message: Message, state: FSMContext) ->
         for field, field_data in (await state.get_data()).items()
     }
     form['age'] = int(form['age'])
-
     await state.set_state(AuthGroup.authorized)
     await send_msg(
         consts.EXCHANGE_NAME,
@@ -210,15 +212,15 @@ async def _process_filter_by_description(message: Message, state: FSMContext) ->
                 FormMessage(
                     event='user_form',
                     action='send_form',
-                    user_id=message.from_user.id,
+                    user_id=str(form['message_user_id']),
                     **form,
                 ),
             ),
             msgpack.packb(
                 RecMessage(
-                    event='user_recommendations',
+                    event='recommendations',
                     action='get_recommendations',
-                    user_id=message.from_user.id,
+                    user_id=str(form['message_user_id']),
                 )
             ),
         ]

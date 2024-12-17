@@ -1,22 +1,11 @@
-from sqlalchemy import insert
-
-from model.user import User
+import logging
 from consumer.schema.form import FormMessage
-from storage.db import async_session
-
+from recsys.db import redis_manager
 
 async def handle_event_form(message: FormMessage):
     if message['action'] == 'send_form':
-        async with async_session() as db:
-            user_data = {
-                field: field_data
-                for field, field_data in message.items()
-                if field not in {'user_id', 'action', 'event'}
-            }
-            user_data['id'] = message['user_id']
-
-            await db.execute(insert(User).values(**user_data))
-            await db.commit()
-
-    elif message['action'] == 'change_form':
-        pass
+        try:
+            redis_manager.add_to_collection(message)
+            logging.info(f"User data added to Redis for user_id: {message['user_id']}")
+        except Exception as error:
+            logging.error(f"Failed to handle send_form: {error}")
