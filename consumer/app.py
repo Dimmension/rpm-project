@@ -2,6 +2,7 @@ import msgpack
 import logging
 from consumer.handlers.form import handle_event_form
 from consumer.schema.form import FormMessage
+from consumer.metrics import TOTAL_RECEIVED_MESSAGES
 from storage.rabbit import channel_pool
 from logger import logger, LOGGING_CONFIG
 
@@ -17,6 +18,7 @@ async def start_consumer() -> None:
 
         async with queue.iterator() as queue_iter:
             async for message in queue_iter:
+                TOTAL_RECEIVED_MESSAGES.inc()
                 async with message.process():
                     body: FormMessage = msgpack.unpackb(message.body)
                     print(f'')
