@@ -5,7 +5,7 @@ from io import BytesIO
 # Initialize MinIO client
 minio_client = Minio(
     #'host.docker.internal:9000'
-    'minio:9000',  # Replace with your MinIO server URL
+    'localhost:9000',  # Replace with your MinIO server URL
     access_key='minioadmin',
     secret_key='minioadmin',
     secure=False  # Set to False if your MinIO server doesn't use HTTPS

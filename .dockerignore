@@ -1,4 +1,5 @@
 venv
+.vscode
 .git
 __pycache__
 minio/certs

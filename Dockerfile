@@ -1,4 +1,4 @@
-FROM python:3.11
+FROM python:3.11:ML_edition
 
 ENV PYTHONPATH=/code
 WORKDIR code
