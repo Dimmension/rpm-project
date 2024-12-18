@@ -1,13 +1,7 @@
-from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.state import State, StatesGroup
 
 
-class AuthGroup(StatesGroup):
-    no_authorized = State()
-    authorized = State()
-
-
-class AuthProfileForm(StatesGroup):
-    user_id = State()
+class EditProfileForm(StatesGroup):
     photo = State()
     username = State()
     age = State()
