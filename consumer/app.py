@@ -15,7 +15,6 @@ async def start_consumer() -> None:
             async for message in queue_iter:
                 async with message.process():
                     body: FormMessage = msgpack.unpackb(message.body)
-                    print(f'')
                     if body['event'] == 'user_form':
                         await handle_event_form(body)
                     elif body['event'] == 'user_recommendations':
