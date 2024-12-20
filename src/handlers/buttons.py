@@ -22,9 +22,13 @@ DROP_VALUE_MSG = 'Сбросить'
 DROP_VALUE_CALLBACK_MSG = '/drop_value'
 
 SETTINGS_MSG = 'Настройки'
+MEET_MSG = 'Найти знакомства'
 CHANGE_PROFILE_MSG = 'Изменить профиль'
 DELETE_PROFILE_MSG = 'Удалить профиль'
 BACK_TO_MENU_MSG = 'Вернуться в меню'
+
+LIKE_MSG = '🥰'
+DISLIKE_MSG = '🫡'
 
 masculine = InlineKeyboardButton(
     text=MASCULINE_MSG,
@@ -55,6 +59,10 @@ settings = KeyboardButton(
     text=SETTINGS_MSG,
 )
 
+meet = KeyboardButton(
+    text=MEET_MSG,
+)
+
 change_profile = KeyboardButton(
     text=CHANGE_PROFILE_MSG,
 )
@@ -75,4 +83,12 @@ no_changes = InlineKeyboardButton(
 drop_value = InlineKeyboardButton(
     text=DROP_VALUE_MSG,
     callback_data=DROP_VALUE_CALLBACK_MSG,
+)
+
+like = KeyboardButton(
+    text=LIKE_MSG,
+)
+
+dislike = KeyboardButton(
+    text=DISLIKE_MSG,
 )

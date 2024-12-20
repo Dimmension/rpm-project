@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     DB_PASSWORD: str
 
     EMBEDDER_MODEL: str = 'cointegrated/rubert-tiny2'
+    EMBEDDER_MODEL_DIMMENSION: int = 312
 
     RABBIT_HOST: str = 'localhost'
     RABBIT_PORT: int = 5672

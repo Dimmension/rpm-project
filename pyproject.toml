@@ -21,7 +21,6 @@ msgpack = "^1.1.0"
 orjson = "^3.10.12"
 minio = "^7.2.12"
 neo4j = "^5.27.0"
-sentence-transformers = "^3.3.1"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.1.1"
