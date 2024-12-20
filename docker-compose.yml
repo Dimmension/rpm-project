@@ -17,13 +17,10 @@ services:
     ports:
       - "7474:7474"
       - "7687:7687"
-    restart: always
-    # TODO: healthcheck for neo4j DB
-    # command: [ "postgres", "-c", "log_statement=all", "-c", "log_destination=stderr" ]
-    # healthcheck:
-    #   test: [ "CMD", "pg_isready", "-U", "test", "-d", "postgres" ]
-    #   interval: 0.5s
-    #   retries: 30
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:7474/", "||", "exit 1"]
+      interval: 0.5s
+      retries: 30
 
   minio:
     image: minio/minio
@@ -42,31 +39,30 @@ services:
       SSL_CERT_FILE: /certs/public.crt
     command: server --console-address ":9001" /data --certs-dir /certs
 
-#  producer:
-#    build: .
-#    command: python3 src/app.py
-#    environment:
-#      - PYTHONPATH=.
-#    volumes:
-#      - producer-data:/code/src
-#    depends_on:
-#      - db
-#      - redis
-#      - rabbitmq
-#      - minio
-#    stop_signal: SIGINT
-#
-#  consumer:
-#    build: .
-#    command: python3 consumer
-#    environment:
-#      - PYTHONPATH=.
-#    volumes:
-#      - consumer-data:/code/consumer
-#    depends_on:
-#      - db
-#      - redis
-#      - rabbitmq
-#      - minio
-#    stop_signal: SIGINT
-#
+  producer:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: python3 src/app.py
+    volumes:
+      - .:/code
+    depends_on:
+      - rabbitmq
+      - db
+      - redis
+      - minio
+    stop_signal: SIGINT
+
+  consumer:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: python3 consumer
+    volumes:
+      - .:/code
+    depends_on:
+      - rabbitmq
+      - db
+      - redis
+      - minio
+    stop_signal: SIGINT

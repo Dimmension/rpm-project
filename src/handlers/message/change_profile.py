@@ -1,29 +1,31 @@
+import aio_pika
 from aiogram import F
-from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 import msgpack
 
 from consumer.schema.form import FormMessage
 from src.handlers.states.auth import AuthGroup
 from src.handlers.states.profile import EditProfileForm
+from src.services.minio_service import upload_photo
 from src.utils import validators
 from storage import consts
 from storage.db import driver
-from storage.queries import GET_USER_DATA
+from storage.queries import GET_FULL_USER_DATA
 from storage.rabbit import send_msg
 from .router import router
 
-
 from src.handlers import buttons
+from src.handlers.markups import menu
 
 
 @router.message(F.text == buttons.CHANGE_PROFILE_MSG)
 async def change_profile(message: Message, state: FSMContext) -> None:
-    await message.answer('Загрузка...', reply_markup=ReplyKeyboardRemove())
+    await message.answer('Загрузка вашего профиля', reply_markup=ReplyKeyboardRemove())
 
     async with driver.session() as session:
         result = await session.run(
-            query=GET_USER_DATA,
+            query=GET_FULL_USER_DATA,
             parameters={'user_id': message.from_user.id},
         )
         user_data = (await result.data())[0]
@@ -38,13 +40,56 @@ async def change_profile(message: Message, state: FSMContext) -> None:
 
     user_data['filter_by_age'] = filter_by_age
     await state.update_data(**user_data)
+    await state.set_state(EditProfileForm.photo)
+
+    markup = InlineKeyboardMarkup(
+        inline_keyboard=[[buttons.no_changes]],
+    )
+    # TODO: Текущее фото: ...
+    # await message.answer_photo()
+    await message.answer(
+        f'Текущее фото: {await state.get_value("photo")}',
+        reply_markup=markup,
+    )
+
+
+@router.callback_query(
+    F.data == buttons.NO_CHANGES_CALLBACK_MSG,
+    EditProfileForm.photo,
+)
+async def capture_photo_no_changes_callback(callback: CallbackQuery, state: FSMContext) -> None:
+    await _process_photo(callback.message, state)
+
+
+@router.message(EditProfileForm.photo)
+async def capture_photo(message: Message, state: FSMContext) -> None:
+    if message.content_type != 'photo':
+        await message.answer('Неправильный формат фотографии!')
+        return
+    photo = message.photo[-1]
+    file_name = f'user_{message.from_user.id}.jpg'
+    bot = message.bot
+
+    try:
+        file_info = await bot.get_file(photo.file_id)
+        file_bytes = await bot.download_file(file_info.file_path)
+
+        await upload_photo('main', file_name, file_bytes.getvalue())
+        await state.update_data(photo=file_name)
+    except Exception as e:
+        await message.answer(f'Ошибка загрузки фотографии: {e}!')
+        return
+    await _process_photo(message, state)
+
+
+async def _process_photo(message: Message, state: FSMContext) -> None:
     await state.set_state(EditProfileForm.username)
 
     markup = InlineKeyboardMarkup(
         inline_keyboard=[[buttons.no_changes]]
     )
     await message.answer(
-        f'Текущее имя: {await state.get_value('username')}',
+        f'Текущее имя: {await state.get_value("username")}',
         reply_markup=markup,
     )
 
@@ -53,7 +98,7 @@ async def change_profile(message: Message, state: FSMContext) -> None:
     F.data == buttons.NO_CHANGES_CALLBACK_MSG,
     EditProfileForm.username,
 )
-async def capture_username_callback(callback: CallbackQuery, state: FSMContext) -> None:
+async def capture_username_no_changes_callback(callback: CallbackQuery, state: FSMContext) -> None:
     await _process_username(callback.message, state)
 
 
@@ -75,7 +120,7 @@ async def _process_username(message: Message, state: FSMContext) -> None:
         inline_keyboard=[[buttons.no_changes]]
     )
     await message.answer(
-        f'Текущий возраст: {await state.get_value('age')}',
+        f'Текущий возраст: {await state.get_value("age")}',
         reply_markup=markup,
     )
 
@@ -84,7 +129,7 @@ async def _process_username(message: Message, state: FSMContext) -> None:
     F.data == buttons.NO_CHANGES_CALLBACK_MSG,
     EditProfileForm.age,
 )
-async def capture_age_callback(callback: CallbackQuery, state: FSMContext) -> None:
+async def capture_age_no_changes_callback(callback: CallbackQuery, state: FSMContext) -> None:
     await _process_age(callback.message, state)
 
 
@@ -362,19 +407,18 @@ async def _process_filter_by_description(message: Message, state: FSMContext) ->
         consts.EXCHANGE_NAME,
         consts.GENERAL_USERS_QUEUE_NAME,
         [
-            msgpack.packb(
-                FormMessage(
-                    event='user_form',
-                    action='change_form',
-                    **form,
+            aio_pika.Message(
+                msgpack.packb(
+                    FormMessage(
+                        event='user_form',
+                        action='change_form',
+                        **form,
+                    ),
                 ),
             ),
         ],
     )
-    markup = ReplyKeyboardMarkup(
-        keyboard=[[buttons.settings]],
-    )
     await message.answer(
         'Ваши изменения успешно применены!',
-        reply_markup=markup,
+        reply_markup=menu,
     )

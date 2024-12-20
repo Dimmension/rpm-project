@@ -1,11 +1,13 @@
+import aio_pika
 from aiogram import F
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, ReplyKeyboardMarkup
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup
 from aiogram.fsm.context import FSMContext
 import msgpack
 
 from consumer.schema.form import FormMessage
 from consumer.schema.recommendation import RecMessage
 from src.handlers import buttons
+from src.handlers.markups import menu
 from src.handlers.states.auth import AuthGroup, AuthProfileForm
 from src.handlers.command.router import router
 
@@ -36,7 +38,13 @@ async def process_photo(message: Message, state: FSMContext) -> None:
         file_bytes = await bot.download_file(file_info.file_path)
 
         await upload_photo('main', file_name, file_bytes.getvalue())
-        await state.update_data({'photo': file_name, 'user_id': message.from_user.id})
+        await state.update_data(
+            {
+                'photo': file_name,
+                'user_id': message.from_user.id,
+                'user_tag': message.from_user.username,
+            },
+        )
 
         await state.set_state(AuthProfileForm.username)
         await message.answer('*Введите имя')
@@ -217,26 +225,28 @@ async def _process_filter_by_description(message: Message, state: FSMContext) ->
         consts.EXCHANGE_NAME,
         consts.GENERAL_USERS_QUEUE_NAME,
         [
-            msgpack.packb(
-                FormMessage(
-                    event='user_form',
-                    action='send_form',
-                    **form,
+            aio_pika.Message(
+                msgpack.packb(
+                    FormMessage(
+                        event='user_form',
+                        action='send_form',
+                        **form,
+                    ),
                 ),
             ),
-            msgpack.packb(
-                RecMessage(
-                    event='user_recommendations',
-                    action='get_recommendations',
-                    user_id=form['user_id'],
-                )
+            aio_pika.Message(
+                msgpack.packb(
+                    RecMessage(
+                        event='user_recommendations',
+                        action='get_recommendations',
+                        user_id=form['user_id'],
+                    )
+                ),
             ),
-        ]
-    )
-    markup = ReplyKeyboardMarkup(
-        keyboard=[[buttons.settings]],
+        ],
+        user_id=form['user_id'],
     )
     await message.answer(
         'Теперь вы авторизованы',
-        reply_markup=markup,
+        reply_markup=menu,
     )
