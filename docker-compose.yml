@@ -41,8 +41,6 @@ services:
       MINIO_SECRET_KEY: miniotest
       MINIO_SCHEME: https
       SSL_CERT_FILE: /certs/public.crt
-    # networks:
-    #   - minio_network
     command: server --console-address ":9001" /data --certs-dir /certs
 
   nginx:
@@ -52,8 +50,6 @@ services:
       - minio
     ports:
       - "80:80"   
-    # networks:
-    #   - minio_network
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./minio/certs:/etc/nginx/certs
@@ -97,9 +93,6 @@ services:
     volumes:
       - ./prometheus:/prometheus
 
-# networks:
-#     minio_network:
-#       driver: bridge
 
 volumes:
   producer-data:
