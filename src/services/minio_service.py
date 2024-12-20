@@ -4,9 +4,9 @@ from minio import Minio
 from minio.error import S3Error
 from io import BytesIO
 from src.logger import logger, LOGGING_CONFIG
+
 minio_client = Minio(
-    #'host.docker.internal:9000'
-    'minio:9000',
+    'nginx/minio',  # Теперь MinIO доступен через Nginx
     access_key='minioadmin',
     secret_key='minioadmin',
     secure=False
@@ -28,7 +28,6 @@ async def upload_photo(bucket_name, object_name, photo_bytes):
             logger.info('Bucket with given was not found, created new one.')
 
         # Upload the photo as a stream
-        # print(f"Uploading {object_name} to bucket '{bucket_name}'...")
         logger.info(f'Uploading {object_name} to bucket - {bucket_name}...')
         minio_client.put_object(
             bucket_name = bucket_name,
@@ -42,24 +41,31 @@ async def upload_photo(bucket_name, object_name, photo_bytes):
         logger.warning(f'Error occurred: {e}')
         return
 
-async def get_photo(bucket_name, object_name, download_path):
-    # TODO change from downloading to path, to not downloading at all
+async def get_photo(bucket_name, user_id):
     """
-    Fetch a photo from a MinIO bucket and save it locally.
+    Fetch a photo from a MinIO bucket and return the file as a BytesIO object.
 
     Args:
         bucket_name (str): The name of the bucket.
         object_name (str): The object name in MinIO (file name).
-        download_path (str): Local path to save the downloaded file.
+
+    Returns:
+        BytesIO: The content of the photo as a BytesIO object, or None if an error occurs.
     """
+    object_name = f"user_{user_id}.jpg"
     try:
         logger.info(f"Downloading {object_name} from bucket '{bucket_name}'...")
-        # Use MinIO client to fetch the object
-        minio_client.fget_object(
-            bucket_name=bucket_name,
-            object_name=object_name,
-            file_path=download_path
-        )
-        logger.info(f'Downloaded {object_name} to {download_path}')
+        
+        response = minio_client.get_object(bucket_name=bucket_name, object_name=object_name)
+        photo_file = BytesIO(response.read())
+        
+        response.close()
+        response.release_conn()
+
+        logger.info(f'Downloaded {object_name} from bucket {bucket_name}')
+        
+        return photo_file
+
     except S3Error as e:
-        logger.info(f'Error occurred: {e}')
+        logger.warning(f'Error occurred: {e}')
+        return None  # Если ошибка, возвращаем None

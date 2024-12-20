@@ -3,4 +3,3 @@
 venv
 minio/certs
 minio/data
-**prometheus**

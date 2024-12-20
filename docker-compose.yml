@@ -42,6 +42,17 @@ services:
       MINIO_SCHEME: https
       SSL_CERT_FILE: /certs/public.crt
     command: server --console-address ":9001" /data --certs-dir /certs
+  nginx:
+    image: nginx
+    container_name: nginx
+    depends_on:
+      - minio
+    ports:
+      - "80:80"   
+    networks:
+      - minio_network
+
+  
   producer:
     build: .
     command: python3 src/app.py
@@ -81,6 +92,10 @@ services:
     restart: unless-stopped
     volumes:
       - ./prometheus:/prometheus
+
+networks:
+    minio_network:
+      driver: bridge
 
 volumes:
   producer-data:
