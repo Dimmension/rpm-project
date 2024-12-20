@@ -3,7 +3,7 @@ import src.consts
 
 
 def valid_username(username: str) -> str | None:
-    if not username.isalpha():
+    if username.isdigit():
         return 'Имя должно состоять из букв!'
     elif len(username) > src.consts.MAX_USERNAME_LENGTH:
         return f'Длина имени не должна превосходить: {src.consts.MAX_USERNAME_LENGTH}!'
@@ -13,6 +13,8 @@ def valid_username(username: str) -> str | None:
 def valid_age(age: str) -> str | None:
     if not bool(re.match(src.consts.AGE_REGEXP, age)):
         return 'Неправильный возраст!'
+    if int(age) not in range(src.consts.MIN_AGE, src.consts.MAX_AGE):
+        return src.consts.AGE_ERORR_MSG
     return None
 
 

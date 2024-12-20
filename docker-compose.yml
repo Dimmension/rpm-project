@@ -1,5 +1,5 @@
-version: '0.4'
-name: 'rpm_rpoject'
+version: '0.5.2'
+name: 'siriusdates'
 services:
   rabbitmq:
     image: rabbitmq:3.13.7-management
@@ -42,6 +42,18 @@ services:
       MINIO_SCHEME: https
       SSL_CERT_FILE: /certs/public.crt
     command: server --console-address ":9001" /data --certs-dir /certs
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    depends_on:
+      - minio
+    ports:
+      - "80:80"   
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./minio/certs:/etc/nginx/certs
+
   producer:
     build: .
     command: python3 src/app.py
@@ -62,13 +74,25 @@ services:
     environment:
       - PYTHONPATH=.
     volumes:
-      - consumer-data:/code/consumer
+      - .:/code
     depends_on:
       - db
       - redis
       - rabbitmq
       - minio
     stop_signal: SIGINT
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - "--config.file=../prometheus/prometheus_config.yml"
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    volumes:
+      - ./prometheus:/prometheus
+
 
 volumes:
   producer-data:
