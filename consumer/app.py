@@ -9,9 +9,8 @@ async def start_consumer() -> None:
     queue_name = 'user_messages'
     async with channel_pool.acquire() as channel:
         await channel.set_qos(prefetch_count=10)
-        print(channel)
         queue = await channel.declare_queue(queue_name, durable=True)
-        print(queue)
+
         async with queue.iterator() as queue_iter:
             async for message in queue_iter:
                 async with message.process():

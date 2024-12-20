@@ -4,11 +4,21 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
 
   redis:
     image: redis:6.2.4
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
 
   db:
     image: neo4j:5.26.0
@@ -18,7 +28,7 @@ services:
       - "7474:7474"
       - "7687:7687"
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:7474/", "||", "exit 1"]
+      test: ["CMD", "wget", "--spider", "http://localhost:7474/"]
       interval: 0.5s
       retries: 30
 
@@ -38,19 +48,28 @@ services:
       MINIO_SCHEME: https
       SSL_CERT_FILE: /certs/public.crt
     command: server --console-address ":9001" /data --certs-dir /certs
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
 
   producer:
     build:
       dockerfile: Dockerfile
       context: .
-    command: python3 src/app.py
+    command: bash -c "python3 scripts/setup_db.py && python3 src/app.py"
     volumes:
       - .:/code
     depends_on:
-      - rabbitmq
-      - db
-      - redis
-      - minio
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      db:
+        condition: service_healthy
     stop_signal: SIGINT
 
   consumer:
@@ -61,8 +80,12 @@ services:
     volumes:
       - .:/code
     depends_on:
-      - rabbitmq
-      - db
-      - redis
-      - minio
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      db:
+        condition: service_healthy
     stop_signal: SIGINT
