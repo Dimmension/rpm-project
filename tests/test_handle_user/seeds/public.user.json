@@ -1,0 +1,14 @@
+{
+  "action": "send_form",
+  "user_id": "1",
+  "user_tag": "dimmension",
+  "photo": "aboba",
+  "username": "Vadim",
+  "age": "19",
+  "gender": "masculine",
+  "description": "I like Machine Learning",
+  "filter_by_gender": "",
+  "filter_by_age_min": "",
+  "filter_by_age_max": "",
+  "filter_by_description": ""
+}
