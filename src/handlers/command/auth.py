@@ -1,3 +1,4 @@
+import aio_pika
 from aiogram import F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup
 from aiogram.fsm.context import FSMContext
@@ -6,7 +7,8 @@ import msgpack
 from consumer.schema.form import FormMessage
 from consumer.schema.recommendation import RecMessage
 from src.handlers import buttons
-from src.handlers.states.auth import AuthForm, AuthGroup
+from src.handlers.markups import menu
+from src.handlers.states.auth import AuthGroup, AuthProfileForm
 from src.handlers.command.router import router
 
 from src.services.minio_service import upload_photo
@@ -15,13 +17,14 @@ from src.utils import validators
 from storage.rabbit import send_msg
 from storage import consts
 
+
 @router.callback_query(F.data == buttons.AUTH_CALLBACK_MSG, AuthGroup.no_authorized)
 async def auth(callback: CallbackQuery, state: FSMContext) -> None:
-    await state.set_state(AuthForm.photo)
+    await state.set_state(AuthProfileForm.photo)
     await callback.message.answer('*Загрузите фотографию для вашего профиля:')
 
 
-@router.message(AuthForm.photo)
+@router.message(AuthProfileForm.photo)
 async def process_photo(message: Message, state: FSMContext) -> None:
     if message.content_type != 'photo':
         await message.answer('Неправильный формат фотографии!')
@@ -35,9 +38,15 @@ async def process_photo(message: Message, state: FSMContext) -> None:
         file_bytes = await bot.download_file(file_info.file_path)
 
         await upload_photo('main', file_name, file_bytes.getvalue())
-        await state.update_data(photo=file_name)
+        await state.update_data(
+            {
+                'photo': file_name,
+                'user_id': message.from_user.id,
+                'user_tag': message.from_user.username,
+            },
+        )
 
-        await state.set_state(AuthForm.name)
+        await state.set_state(AuthProfileForm.username)
         await message.answer('*Введите имя')
 
     except Exception as e:
@@ -45,19 +54,19 @@ async def process_photo(message: Message, state: FSMContext) -> None:
         return
 
 
-@router.message(AuthForm.name)
-async def process_name(message: Message, state: FSMContext) -> None:
+@router.message(AuthProfileForm.username)
+async def process_username(message: Message, state: FSMContext) -> None:
     valid_msg = validators.valid_username(message.text)
     if valid_msg:
         await message.answer(valid_msg)
         return
 
     await state.update_data(username=message.text)
-    await state.set_state(AuthForm.age)
+    await state.set_state(AuthProfileForm.age)
     await message.answer('*Введите возраст')
 
 
-@router.message(AuthForm.age)
+@router.message(AuthProfileForm.age)
 async def process_age(message: Message, state: FSMContext) -> None:
     valid_msg = validators.valid_age(message.text)
     if valid_msg:
@@ -65,7 +74,7 @@ async def process_age(message: Message, state: FSMContext) -> None:
         return
 
     await state.update_data(age=message.text)
-    await state.set_state(AuthForm.gender)
+    await state.set_state(AuthProfileForm.gender)
 
     markup = InlineKeyboardMarkup(
         inline_keyboard=[[buttons.masculine, buttons.feminine]],
@@ -78,11 +87,11 @@ async def process_age(message: Message, state: FSMContext) -> None:
 
 @router.callback_query(
     F.data.in_({buttons.FEMININE_CALLBACK_MSG, buttons.MASCULINE_CALLBACK_MSG}),
-    AuthForm.gender,
+    AuthProfileForm.gender,
 )
 async def process_gender(callback: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(gender=callback.data)
-    await state.set_state(AuthForm.description)
+    await state.set_state(AuthProfileForm.description)
 
     markup = InlineKeyboardMarkup(
         inline_keyboard=[[buttons.skip]]
@@ -96,14 +105,14 @@ async def process_gender(callback: CallbackQuery, state: FSMContext) -> None:
 
 @router.callback_query(
     F.data == buttons.SKIP_CALLBACK_MSG,
-    AuthForm.description,
+    AuthProfileForm.description,
 )
 async def capture_description_callback(callback: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(description=None)
     await _process_description(callback.message, state)
 
 
-@router.message(AuthForm.description)
+@router.message(AuthProfileForm.description)
 async def capture_description(message: Message, state: FSMContext) -> None:
     valid_msg = validators.valid_description(message.text)
     if valid_msg:
@@ -114,7 +123,7 @@ async def capture_description(message: Message, state: FSMContext) -> None:
 
 
 async def _process_description(message: Message, state: FSMContext) -> None:
-    await state.set_state(AuthForm.filter_by_age)
+    await state.set_state(AuthProfileForm.filter_by_age)
 
     markup = InlineKeyboardMarkup(inline_keyboard=[[buttons.skip]])
     await message.answer(
@@ -125,14 +134,14 @@ async def _process_description(message: Message, state: FSMContext) -> None:
 
 @router.callback_query(
     F.data == buttons.SKIP_CALLBACK_MSG,
-    AuthForm.filter_by_age,
+    AuthProfileForm.filter_by_age,
 )
 async def capture_filter_by_age_callback(callback: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(filter_by_age=None)
     await _process_filter_by_age(callback.message, state)
 
 
-@router.message(AuthForm.filter_by_age)
+@router.message(AuthProfileForm.filter_by_age)
 async def capture_filter_by_age(message: Message, state: FSMContext) -> None:
     valid_msg = validators.valid_filter_by_age(message.text)
     if valid_msg:
@@ -143,7 +152,7 @@ async def capture_filter_by_age(message: Message, state: FSMContext) -> None:
 
 
 async def _process_filter_by_age(message: Message, state: FSMContext) -> None:
-    await state.set_state(AuthForm.filter_by_gender)
+    await state.set_state(AuthProfileForm.filter_by_gender)
 
     markup = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -162,11 +171,11 @@ async def _process_filter_by_age(message: Message, state: FSMContext) -> None:
         buttons.MASCULINE_CALLBACK_MSG,
         buttons.NO_PREFERENCES_CALLBACK_MSG,
     }),
-    AuthForm.filter_by_gender,
+    AuthProfileForm.filter_by_gender,
 )
 async def process_filter_by_gender(callback: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(filter_by_gender=callback.data)
-    await state.set_state(AuthForm.filter_by_description)
+    await state.set_state(AuthProfileForm.filter_by_description)
 
     markup = InlineKeyboardMarkup(inline_keyboard=[[buttons.skip]])
     await callback.message.answer(
@@ -177,14 +186,14 @@ async def process_filter_by_gender(callback: CallbackQuery, state: FSMContext) -
 
 @router.callback_query(
     F.data == buttons.SKIP_CALLBACK_MSG,
-    AuthForm.filter_by_description,
+    AuthProfileForm.filter_by_description,
 )
 async def capture_filter_by_description_callback(callback: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(filter_by_description=None)
     await _process_filter_by_description(callback.message, state)
 
 
-@router.message(AuthForm.filter_by_description)
+@router.message(AuthProfileForm.filter_by_description)
 async def capture_filter_by_description(message: Message, state: FSMContext) -> None:
     valid_msg = validators.valid_filter_by_description(message.text)
     if valid_msg:
@@ -195,32 +204,49 @@ async def capture_filter_by_description(message: Message, state: FSMContext) -> 
 
 
 async def _process_filter_by_description(message: Message, state: FSMContext) -> None:
-    form = {
+    form: dict[str, str | int] = {
         field: field_data
         for field, field_data in (await state.get_data()).items()
     }
     form['age'] = int(form['age'])
+    form['user_id'] = int(form['user_id'])
+
+    filter_by_age_field = form.pop('filter_by_age')
+    if filter_by_age_field:
+        age_min, age_max = map(int, filter_by_age_field.split('-'))
+    else:
+        age_min = age_max = None
+
+    form['filter_by_age_min'] = age_min
+    form['filter_by_age_max'] = age_max
 
     await state.set_state(AuthGroup.authorized)
     await send_msg(
         consts.EXCHANGE_NAME,
         consts.GENERAL_USERS_QUEUE_NAME,
         [
-            msgpack.packb(
-                FormMessage(
-                    event='user_form',
-                    action='send_form',
-                    user_id=message.from_user.id,
-                    **form,
+            aio_pika.Message(
+                msgpack.packb(
+                    FormMessage(
+                        event='user_form',
+                        action='send_form',
+                        **form,
+                    ),
                 ),
             ),
-            msgpack.packb(
-                RecMessage(
-                    event='user_recommendations',
-                    action='get_recommendations',
-                    user_id=message.from_user.id,
-                )
+            aio_pika.Message(
+                msgpack.packb(
+                    RecMessage(
+                        event='user_recommendations',
+                        action='get_recommendations',
+                        user_id=form['user_id'],
+                    )
+                ),
             ),
-        ]
+        ],
+        user_id=form['user_id'],
     )
-    await message.answer('Теперь вы авторизованы')
+    await message.answer(
+        'Теперь вы авторизованы',
+        reply_markup=menu,
+    )

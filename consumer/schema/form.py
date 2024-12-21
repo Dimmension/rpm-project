@@ -1,20 +1,21 @@
 from .base import BaseMessage
 
 
-# TODO: event -> заполнение формы:
-# actions:
-# 1. Заполнить данные в первый раз
-# 2. Изменить форму ? (подумать над реализацией)
-
 class FormMessage(BaseMessage):
     action: str
     user_id: int
+    user_tag: str
     photo: str
     username: str
     age: int
     gender: str
-    description: str
-    photo: str
-    filter_by_age: str
+    description: str | None
     filter_by_gender: str
-    filter_by_description: str
+    filter_by_age_min: int | None
+    filter_by_age_max: int | None
+    filter_by_description: str | None
+
+
+class DeleteFormMessage(BaseMessage):
+    action: str
+    user_id: int
