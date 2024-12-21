@@ -5,7 +5,7 @@ from consumer.handlers.like import handle_event_like
 from consumer.handlers.recommendation import handle_event_recommendations
 from storage.rabbit import channel_pool
 from logger import logger, LOGGING_CONFIG
-
+from consumer.metrics import TOTAL_RECEIVED_MESSAGES
 
 async def start_consumer() -> None:
     logging.config.dictConfig(LOGGING_CONFIG)
@@ -18,6 +18,7 @@ async def start_consumer() -> None:
         async with queue.iterator() as queue_iter:
             async for message in queue_iter:
                 TOTAL_RECEIVED_MESSAGES.inc()
+                logger.info('____PROMETHEUS: ' + TOTAL_RECEIVED_MESSAGES)
                 async with message.process():
                     body = msgpack.unpackb(message.body)
                     if body['event'] == 'user_form':

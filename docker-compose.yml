@@ -73,6 +73,8 @@ services:
       dockerfile: Dockerfile
       context: .
     command: bash -c "python3 scripts/setup_db.py && python3 src/app.py"
+    ports:
+      - "8010:8010"
     volumes:
       - .:/code
     depends_on:
@@ -91,6 +93,8 @@ services:
       dockerfile: Dockerfile
       context: .
     command: python3 consumer
+    ports:
+      - "8001:8001"
     volumes:
       - .:/code
     depends_on:
@@ -108,12 +112,12 @@ services:
     image: prom/prometheus
     container_name: prometheus
     command:
-      - "--config.file=../prometheus/prometheus_config.yml"
+      - "--config.file=/etc/prometheus/prometheus_config.yml"
     ports:
       - "9090:9090"
     restart: unless-stopped
     volumes:
-      - ./prometheus:/prometheus
+      - ./prometheus:/etc/prometheus
 
 
 volumes:
