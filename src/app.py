@@ -3,7 +3,6 @@ from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 import uvicorn
-import logging
 from fastapi import FastAPI
 from starlette_context import plugins
 from starlette_context.middleware import RawContextMiddleware
@@ -13,11 +12,13 @@ from src.api.tg.router import router as tg_router
 from src.bg_tasks import background_tasks
 from logger import logger, LOGGING_CONFIG
 from src.bot import bot, dp
+import logging.config
+from src.logger import LOGGING_CONFIG, logger
+logging.config.dictConfig(LOGGING_CONFIG)
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
-    logging.config.dictConfig(LOGGING_CONFIG)
     logger.info('Starting producer lifespan')
 
     wh_info = await bot.get_webhook_info()

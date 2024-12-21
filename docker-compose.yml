@@ -42,27 +42,29 @@ services:
       MINIO_SCHEME: https
       SSL_CERT_FILE: /certs/public.crt
     command: server --console-address ":9001" /data --certs-dir /certs
-  producer:
+
+  producer_rpm:
+    container_name: producer_rpm
     build: .
-    command: python3 src/app.py
     environment:
       - PYTHONPATH=.
     volumes:
-      - producer-data:/code/src
+      - .:/code
     depends_on:
+      - consumer_rpm
       - db
       - redis
       - rabbitmq
       - minio
     stop_signal: SIGINT
+    command: python3 src/app.py
 
-  consumer:
+  consumer_rpm:
+    container_name: consumer_rpm
     build: .
-    command: python3 consumer
     environment:
       - PYTHONPATH=.
     volumes:
-      # - consumer-data:/code/consumer
       - .:/code
     depends_on:
       - db
@@ -70,29 +72,18 @@ services:
       - rabbitmq
       - minio
     stop_signal: SIGINT
+    command: python3 consumer
 
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    command:
-      - "--config.file=../prometheus/prometheus_config.yml"
-    ports:
-      - "9090:9090"
-    restart: unless-stopped
-    volumes:
-      - ./prometheus:/prometheus
-
-volumes:
-  producer-data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./src
-
-  consumer-data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./consumer
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: prometheus
+  #   volumes:
+  #     - ./prometheus:/etc/prometheus
+  #     - ./prometheus_data:/prometheus/data
+  #   ports:
+  #     - "9090:9090"
+  #   command:
+  #     - "--config.file=./prometheus_data/prometheus.conf.yml"
+  #     - "--storage.tsdb.path=/prometheus/data"
+  #     - "--storage.tsdb.retention.time=15d"
+  #   restart: unless-stopped

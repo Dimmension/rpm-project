@@ -1,4 +1,4 @@
-import logging.config
+import logging
 import os
 from contextlib import suppress
 

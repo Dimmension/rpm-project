@@ -3,7 +3,9 @@ from aio_pika.abc import AbstractRobustConnection
 from aio_pika.pool import Pool
 
 from config.settings import settings
-
+import logging.config
+from src.logger import LOGGING_CONFIG, logger
+logging.config.dictConfig(LOGGING_CONFIG)
 
 async def get_connection() -> AbstractRobustConnection:
     return await aio_pika.connect_robust(settings.rabbit_url)
@@ -34,3 +36,4 @@ async def send_msg(exchange_name: str, queue_name: str, messages: list[bytes]) -
         for message in messages:
             # TODO: correlation_id
             await exchange.publish(aio_pika.Message(message), queue_name)
+            logger.info(f'Message published in {exchange_name} {queue_name} with data {message}')

@@ -1,17 +1,13 @@
 import asyncio
-import logging.config
 from typing import AsyncGenerator
-import logging.config
-
-from consumer.logger import LOGGING_CONFIG, logger
-
 from fastapi import FastAPI
 from consumer.app import start_consumer
-from logger import LOGGING_CONFIG, logger
+import logging.config
+from consumer.logger import LOGGING_CONFIG, logger
+logging.config.dictConfig(LOGGING_CONFIG)
 
 
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
-    logging.config.dictConfig(LOGGING_CONFIG)
     logger.info('Starting app lifespan')
     task = asyncio.create_task(start_consumer())
     yield

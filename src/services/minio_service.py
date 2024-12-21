@@ -1,9 +1,11 @@
 # TODO: transfer to nginx
-import logging
 from minio import Minio
 from minio.error import S3Error
 from io import BytesIO
-from src.logger import logger, LOGGING_CONFIG
+import logging
+from src.logger import LOGGING_CONFIG, logger
+logging.config.dictConfig(LOGGING_CONFIG)
+
 minio_client = Minio(
     #'host.docker.internal:9000'
     'minio:9000',
@@ -21,7 +23,6 @@ async def upload_photo(bucket_name, object_name, photo_bytes):
         object_name (str): The name of the object (file) to save in the bucket.
         photo_bytes (bytes): The photo content as bytes.
     """
-    logging.config.dictConfig(LOGGING_CONFIG)
     try:
         if not minio_client.bucket_exists(bucket_name):
             minio_client.make_bucket(bucket_name)

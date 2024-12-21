@@ -7,6 +7,7 @@ class AuthGroup(StatesGroup):
 
 
 class AuthForm(StatesGroup):
+    message_user_id = State()
     photo = State()
     name = State()
     age = State()

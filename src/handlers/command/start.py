@@ -1,14 +1,13 @@
-import logging
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, InlineKeyboardMarkup
 
 from src.handlers import buttons
 from src.handlers.states.auth import AuthGroup
-from src.logger import logger, LOGGING_CONFIG
 
 from .router import router
-
+import logging.config
+from src.logger import LOGGING_CONFIG, logger
 logging.config.dictConfig(LOGGING_CONFIG)
 
 
