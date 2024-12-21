@@ -1,3 +1,5 @@
+version: '1.0.2'
+name: 'siriusdates'
 services:
   rabbitmq:
     image: rabbitmq:3.13.7-management
@@ -53,6 +55,18 @@ services:
       interval: 5s
       retries: 5
       timeout: 5s
+
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    depends_on:
+      - minio
+    ports:
+      - "80:80"   
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./minio/certs:/etc/nginx/certs
 
   producer:
     build:
