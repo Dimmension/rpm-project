@@ -30,7 +30,5 @@ async def start_consumer() -> None:
                     elif body['event'] == 'like':
                         await handle_event_like(body)
 
-                        # TODO: использовать хэндлер для рекоммендаций
-                        pass
     logger.info('Consumer stopping...')
 
