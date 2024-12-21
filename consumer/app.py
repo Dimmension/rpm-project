@@ -16,8 +16,9 @@ async def start_consumer() -> None:
         queue = await channel.declare_queue(queue_name, durable=True)
 
         async with queue.iterator() as queue_iter:
+            i=1
             async for message in queue_iter:
-                TOTAL_RECEIVED_MESSAGES.inc()
+                TOTAL_RECEIVED_MESSAGES.inc(i)
                 logger.info('____PROMETHEUS: ' + TOTAL_RECEIVED_MESSAGES)
                 async with message.process():
                     body = msgpack.unpackb(message.body)

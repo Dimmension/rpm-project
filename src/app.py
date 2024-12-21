@@ -12,6 +12,7 @@ from config.settings import settings
 from src.api.tg.router import router as tg_router
 from src.api.tech.router import router as tech_router
 from src.bg_tasks import background_tasks
+from consumer.api.tech.router import router as consumer_router
 from logger import logger, LOGGING_CONFIG
 from src.bot import bot, dp
 
@@ -38,7 +39,8 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 def create_app() -> FastAPI:
     app = FastAPI(docs_url='/swagger', lifespan=lifespan)
     app.include_router(tg_router, prefix='/tg', tags=['tg'])
-    
+    app.include_router(consumer_router, prefix='/consumer')
+    app.include_router(tech_router, prefix='/producer')
     app.add_middleware(
         RawContextMiddleware,
         plugins=[plugins.CorrelationIdPlugin()],
