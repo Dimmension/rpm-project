@@ -14,7 +14,6 @@ BUCKETS = [
     float('+inf'),
 ]
 
-# histogram_quantile(0.99, sum(rate(latency_seconds_bucket[1m])) by (le, handler))
 LATENCY = Histogram(
     "latency_seconds",
     "Number of seconds",
@@ -22,14 +21,12 @@ LATENCY = Histogram(
     buckets=BUCKETS,
 )
 
-# sum(increase(counter_handler_total{handler="method_funcio..."}[1m]))
 TOTAL_REQ = Counter(
     'counter_handler',
     'Считает то-то',
     labelnames=['handler']
 )
 
-# sum(increase(counter_handler_total{handler="method_funcio..."}[1m]))
 TOTAL_SEND_MESSAGES = Counter(
     'send_messages',
     'Считает то-то',

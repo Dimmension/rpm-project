@@ -14,7 +14,7 @@ async def handle_event_recommendations(message: RecMessage):
                 parameters={'user_id': message['user_id'], 'top_k': 10}
             )
             recommendations = await results.data()
-            async with channel_pool.acquire() as channel:  # type: aio_pika.Channel
+            async with channel_pool.acquire() as channel: 
                 exchange = await channel.declare_exchange(
                     consts.EXCHANGE_NAME,
                     ExchangeType.DIRECT,

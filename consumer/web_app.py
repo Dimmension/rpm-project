@@ -4,6 +4,7 @@ from typing import AsyncGenerator
 import logging.config
 
 from consumer.logger import LOGGING_CONFIG, logger
+from consumer.api.dat.router import router as tech_router
 
 from fastapi import FastAPI
 from consumer.app import start_consumer
@@ -20,4 +21,5 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 
 def create_app() -> FastAPI:
     app = FastAPI(docs_url='/swagger', lifespan=lifespan)
+    app.include_router(tech_router, prefix='', tags=['dat'])
     return app

@@ -10,6 +10,7 @@ from starlette_context.middleware import RawContextMiddleware
 
 from config.settings import settings
 from src.api.tg.router import router as tg_router
+from src.api.dat.router import router as data_router
 from src.bg_tasks import background_tasks
 from logger import logger, LOGGING_CONFIG
 from src.bot import bot, dp
@@ -37,7 +38,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 def create_app() -> FastAPI:
     app = FastAPI(docs_url='/swagger', lifespan=lifespan)
     app.include_router(tg_router, prefix='/tg', tags=['tg'])
-
+    app.include_router(data_router, prefix='', tags=['dat'])
     app.add_middleware(
         RawContextMiddleware,
         plugins=[plugins.CorrelationIdPlugin()],
@@ -55,7 +56,7 @@ if __name__ == '__main__':
             'src.app:create_app',
             factory=True,
             host='0.0.0.0',
-            port=8000,
+            port=8001,
             workers=1,
         )
         logger.info('Bot started on Webhook')

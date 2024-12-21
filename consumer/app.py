@@ -20,6 +20,7 @@ async def start_consumer() -> None:
 
         async with queue.iterator() as queue_iter:
             async for message in queue_iter:
+                TOTAL_RECEIVED_MESSAGES.inc()
                 async with message.process():
                     body = msgpack.unpackb(message.body)
                     if body['event'] == 'user_form':
