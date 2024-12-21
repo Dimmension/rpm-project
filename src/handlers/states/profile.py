@@ -10,7 +10,5 @@ class EditProfileForm(StatesGroup):
     filter_by_age = State()
     filter_by_gender = State()
     filter_by_description = State()
-
-
 class DeleteProfile(StatesGroup):
     deleting = State()

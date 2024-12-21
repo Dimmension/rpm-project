@@ -92,7 +92,7 @@ async def like_user(message: Message, state: FSMContext) -> None:
     prev_user_tag = await state.get_value('prev_user_tag')
 
     if prev_user_priority == consts.LIKED_PRIORITY:
-        await message.answer(f'Матч: @{prev_user_tag}')
+        await message.answer(f'Мэтч: @{prev_user_tag}')
         await send_msg(
             consts.EXCHANGE_NAME,
             consts.GENERAL_USERS_QUEUE_NAME,

@@ -4,4 +4,4 @@
 venv
 minio/certs
 minio/data
-prometheus/data
+**prometheus/data**

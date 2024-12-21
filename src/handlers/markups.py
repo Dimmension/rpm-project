@@ -1,6 +1,5 @@
 from aiogram.types import ReplyKeyboardMarkup
 from . import buttons
-
 menu = ReplyKeyboardMarkup(
     keyboard=[[buttons.settings, buttons.meet]],
     resize_keyboard=True,

@@ -6,8 +6,6 @@ from consumer.schema.recommendation import RecMessage
 from storage.db import driver
 from storage import queries, consts
 from storage.rabbit import channel_pool
-
-
 async def handle_event_recommendations(message: RecMessage):
     if message['action'] == 'get_recommendations':
         async with driver.session() as session:
