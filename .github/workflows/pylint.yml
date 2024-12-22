@@ -36,6 +36,7 @@ jobs:
         pip install poetry
         pip install pytest_asyncio
         pip install asgi_lifespan
+        pip install fastapi
         poetry install
     - name: Pytest
       run: PYTHONPATH=. pytest tests/
