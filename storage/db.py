@@ -1,4 +1,5 @@
 from neo4j import AsyncGraphDatabase
+
 from config.settings import settings
 
 driver = AsyncGraphDatabase.driver(

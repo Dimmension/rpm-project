@@ -1,25 +1,27 @@
+import asyncio
 from collections import deque
+from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator, Any
-from unittest.mock import MagicMock, AsyncMock
+from typing import Any
+from unittest.mock import AsyncMock
 
 import aio_pika
 import msgpack
 import pytest
 import pytest_asyncio
 from fastapi import FastAPI
+from mocking.rabbit import (MockChannel, MockChannelPool, MockExchange,
+                            MockExchangeMessage, MockQueue)
 
 from scripts.load_fixture import load_fixture
 from src import bot
-from storage import redis, rabbit, db
-from storage import rabbit as consumer_rabbit, db as consumer_db
-from storage.db import driver
-from mocking.rabbit import MockQueue, MockChannelPool, MockChannel, MockExchange, MockExchangeMessage
-from mocking.redis import MockRedis
-from contextlib import asynccontextmanager
 from src.app import create_app
-import asyncio
-import pytest
+from storage import db
+from storage import db as consumer_db
+from storage import rabbit
+from storage import rabbit as consumer_rabbit
+from storage.db import driver
+
 
 @pytest.fixture(scope="session")
 def event_loop():
@@ -88,12 +90,10 @@ def mock_exchange() -> MockExchange:
     return MockExchange()
 
 
-from storage.consts import USER_RECOMMENDATIONS_QUEUE_TEMPLATE
-from storage import rabbit
 
 
 @pytest.fixture()
-def mock_exchange() -> MockExchange:
+def mock_exchange() -> MockExchange:  # noqa: F811
     return MockExchange()
 
 

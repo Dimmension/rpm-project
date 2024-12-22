@@ -1,22 +1,23 @@
 import aio_pika
-from aiogram import F
-from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, ReplyKeyboardRemove
-from aiogram.fsm.context import FSMContext
 import msgpack
+from aiogram import F
+from aiogram.fsm.context import FSMContext
+from aiogram.types import (CallbackQuery, InlineKeyboardMarkup, Message,
+                           ReplyKeyboardRemove)
 
 from consumer.schema.form import FormMessage
+from src.handlers import buttons
+from src.handlers.markups import menu
 from src.handlers.states.auth import AuthGroup
 from src.handlers.states.profile import EditProfileForm
-from src.services.minio_service import upload_photo
+from src.services.minio_service import get_photo, upload_photo
 from src.utils import validators
 from storage import consts
 from storage.db import driver
 from storage.queries import GET_FULL_USER_DATA
 from storage.rabbit import send_msg
-from .router import router
 
-from src.handlers import buttons
-from src.handlers.markups import menu
+from .router import router
 
 
 @router.message(F.text == buttons.CHANGE_PROFILE_MSG)
@@ -45,12 +46,13 @@ async def change_profile(message: Message, state: FSMContext) -> None:
     markup = InlineKeyboardMarkup(
         inline_keyboard=[[buttons.no_changes]],
     )
-    # TODO: Текущее фото: ...
-    # await message.answer_photo()
-    await message.answer(
-        f'Текущее фото: {await state.get_value("photo")}',
-        reply_markup=markup,
-    )
+    photo_file = await get_photo('main', user_data['user_id'])
+    await message.answer_photo(photo_file, caption='Текущее фото', reply_markup=markup)
+
+    # await message.answer(
+    #     f'Текущее фото: {await state.get_value("photo")}',
+    #     reply_markup=markup,
+    # )
 
 
 @router.callback_query(

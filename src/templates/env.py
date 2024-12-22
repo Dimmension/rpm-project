@@ -1,4 +1,4 @@
-from typing import Union, Any
+from typing import Any, Union
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 

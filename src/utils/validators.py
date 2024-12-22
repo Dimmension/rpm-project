@@ -1,4 +1,5 @@
 import re
+
 import src.consts
 
 
@@ -12,7 +13,7 @@ def valid_username(username: str) -> str | None:
 
 def valid_age(age: str) -> str | None:
     if not bool(re.match(src.consts.AGE_REGEXP, age)):
-        return 'Неправильный возраст!'
+        return src.consts.AGE_ERORR_MSG
     if int(age) not in range(src.consts.MIN_AGE, src.consts.MAX_AGE):
         return src.consts.AGE_ERORR_MSG
     return None

@@ -1,5 +1,4 @@
 import logging.config
-import os
 from contextlib import suppress
 
 import yaml

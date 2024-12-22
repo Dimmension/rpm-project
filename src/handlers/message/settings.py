@@ -2,6 +2,7 @@ from aiogram import F
 from aiogram.types import Message
 
 from src.handlers import buttons, markups
+
 from .router import router
 
 

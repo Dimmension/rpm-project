@@ -1,18 +1,18 @@
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 import uvicorn
-import logging
 from fastapi import FastAPI
 from starlette_context import plugins
 from starlette_context.middleware import RawContextMiddleware
 
 from config.settings import settings
-from src.api.tg.router import router as tg_router
+from logger import LOGGING_CONFIG, logger
 from src.api.dat.router import router as data_router
+from src.api.tg.router import router as tg_router
 from src.bg_tasks import background_tasks
-from logger import logger, LOGGING_CONFIG
 from src.bot import bot, dp
 
 

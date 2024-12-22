@@ -1,1 +1,1 @@
-from . import metrics, health
+from . import health, metrics  # noqa: F401

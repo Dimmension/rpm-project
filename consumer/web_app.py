@@ -1,14 +1,13 @@
 import asyncio
 import logging.config
 from typing import AsyncGenerator
-import logging.config
-
-from consumer.logger import LOGGING_CONFIG, logger
-from consumer.api.dat.router import router as tech_router
 
 from fastapi import FastAPI
+
+from consumer.api.dat.router import router as tech_router
 from consumer.app import start_consumer
-from logger import LOGGING_CONFIG, logger
+from consumer.logger import LOGGING_CONFIG, logger
+from logger import LOGGING_CONFIG, logger  # noqa: F811
 
 
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:

@@ -24,6 +24,7 @@ neo4j = "^5.27.0"
 prometheus-client = "^0.21.1"
 starlette-exporter = "^0.23.0"
 pyyaml = "^6.0.2"
+ruff = "^0.8.4"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.1.1"

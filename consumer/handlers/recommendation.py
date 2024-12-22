@@ -1,11 +1,14 @@
-from aio_pika import ExchangeType
 import aio_pika
 import msgpack
+from aio_pika import ExchangeType
 from neo4j import AsyncResult
+
 from consumer.schema.recommendation import RecMessage
+from storage import consts, queries
 from storage.db import driver
-from storage import queries, consts
 from storage.rabbit import channel_pool
+
+
 async def handle_event_recommendations(message: RecMessage):
     if message['action'] == 'get_recommendations':
         async with driver.session() as session:

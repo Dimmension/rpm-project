@@ -1,4 +1,4 @@
-from prometheus_client import Counter, Histogram
+from prometheus_client import Counter
 
 TOTAL_RECEIVED_MESSAGES = Counter(
     'received_messages',

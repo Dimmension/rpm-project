@@ -1,5 +1,5 @@
-from asyncio import Task
 import asyncio
+from asyncio import Task
 from typing import Any
 
 from aiogram.methods.base import TelegramMethod
@@ -8,8 +8,8 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from src import bot
-from src.bg_tasks import background_tasks
 from src.api.tg.router import router
+from src.bg_tasks import background_tasks
 
 
 @router.post('/webhook')

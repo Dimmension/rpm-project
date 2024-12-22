@@ -1,11 +1,12 @@
 import aio_pika
+
 from consumer.schema.form import DeleteFormMessage, FormMessage
 from models.consts import DEFAULT_DESCRIPTION_EMBEDDING
-from storage.db import driver
 from models.encoder import get_embeddings
-from storage.queries import INSERT_USER, CHANGE_USER, DELETE_USER
-from storage.rabbit import channel_pool
 from storage.consts import USER_RECOMMENDATIONS_QUEUE_TEMPLATE
+from storage.db import driver
+from storage.queries import CHANGE_USER, DELETE_USER, INSERT_USER
+from storage.rabbit import channel_pool
 
 
 async def get_user_data(message: FormMessage) -> dict[str, str | int | list[float] | None]:

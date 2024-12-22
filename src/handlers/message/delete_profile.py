@@ -1,8 +1,9 @@
 import aio_pika
-from aiogram import F
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
-from aiogram.fsm.context import FSMContext
 import msgpack
+from aiogram import F
+from aiogram.fsm.context import FSMContext
+from aiogram.types import (KeyboardButton, Message, ReplyKeyboardMarkup,
+                           ReplyKeyboardRemove)
 
 from consumer.schema.form import DeleteFormMessage
 from src.handlers import buttons

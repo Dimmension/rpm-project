@@ -1,10 +1,13 @@
 import logging
+from io import BytesIO
+
+from aiogram.types import BufferedInputFile
+from minio.error import S3Error
+
 from config.settings import settings
 from minio import Minio
-from minio.error import S3Error
-from io import BytesIO
-from src.logger import logger, LOGGING_CONFIG
-from aiogram.types import BufferedInputFile
+from src.logger import LOGGING_CONFIG, logger
+
 # Initialize the Minio client correctly
 minio_client = Minio(
     f'nginx:{settings.NGINX_PORT}',  # Updated to point to Nginx as the proxy to MinIO

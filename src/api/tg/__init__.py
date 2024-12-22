@@ -1,1 +1,1 @@
-from . import webhook
+from . import webhook  # noqa: F401

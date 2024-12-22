@@ -1,25 +1,26 @@
 import asyncio
 from typing import Any
-import aio_pika
-from aiogram import F
-from aiogram.types import Message, ReplyKeyboardMarkup
-from aiogram.fsm.context import FSMContext
 
+import aio_pika
+import msgpack
 from aio_pika import Queue
 from aio_pika.exceptions import QueueEmpty
-import msgpack
+from aiogram import F
+from aiogram.fsm.context import FSMContext
+from aiogram.types import Message
 
 from consumer.schema.like import LikeMessage
 from consumer.schema.recommendation import RecMessage
+from src.handlers import buttons
+from src.handlers.markups import recommendation
+from src.services.minio_service import get_photo
+from src.templates.env import render
 from storage import consts, queries
 from storage.db import driver
 from storage.rabbit import channel_pool, send_msg
 
-from src.handlers import buttons
-from src.handlers.markups import recommendation
 from .router import router
-from src.templates.env import render
-from src.services.minio_service import get_photo
+
 
 async def show_recommendations(message: Message, state: FSMContext) -> None:
     async with channel_pool.acquire() as channel:

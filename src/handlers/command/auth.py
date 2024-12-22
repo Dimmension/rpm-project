@@ -1,21 +1,20 @@
 import aio_pika
-from aiogram import F
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup
-from aiogram.fsm.context import FSMContext
 import msgpack
+from aiogram import F
+from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery, InlineKeyboardMarkup, Message
 
+from config.settings import settings
 from consumer.schema.form import FormMessage
 from consumer.schema.recommendation import RecMessage
 from src.handlers import buttons
+from src.handlers.command.router import router
 from src.handlers.markups import menu
 from src.handlers.states.auth import AuthGroup, AuthProfileForm
-from src.handlers.command.router import router
-from config.settings import settings
 from src.services.minio_service import upload_photo
 from src.utils import validators
-
-from storage.rabbit import send_msg
 from storage import consts
+from storage.rabbit import send_msg
 
 
 @router.callback_query(F.data == buttons.AUTH_CALLBACK_MSG, AuthGroup.no_authorized)

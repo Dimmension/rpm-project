@@ -1,8 +1,9 @@
 import pytest
 from aiogram.types import User
+
+from src.handlers.markups import recommendation
 from src.handlers.message.meet import show_recommendations
 from tests.mocking.tg import MockTgMessage
-from src.handlers.markups import recommendation
 
 
 @pytest.mark.asyncio

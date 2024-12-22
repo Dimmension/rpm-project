@@ -1,13 +1,13 @@
-import msgpack
 import logging
+
+import msgpack
+
 from consumer.handlers.form import handle_event_form
 from consumer.handlers.like import handle_event_like
 from consumer.handlers.recommendation import handle_event_recommendations
-
-from consumer.schema.form import FormMessage
 from consumer.metrics import TOTAL_RECEIVED_MESSAGES
+from logger import LOGGING_CONFIG, logger
 from storage.rabbit import channel_pool
-from logger import logger, LOGGING_CONFIG
 
 
 async def start_consumer() -> None:

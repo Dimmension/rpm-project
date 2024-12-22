@@ -1,4 +1,5 @@
 from typing import Any, Awaitable, Callable, Dict
+
 from aiogram import BaseMiddleware
 from aiogram.dispatcher.event.bases import SkipHandler
 from aiogram.types import Message

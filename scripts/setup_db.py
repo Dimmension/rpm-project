@@ -1,12 +1,9 @@
 import asyncio
-from storage.db import driver
-from storage.queries import (
-    CREATE_AGE_INDEX,
-    CREATE_GENDER_INDEX,
-    CREATE_VECTOR_INDEX
-)
 
 from config.settings import settings
+from storage.db import driver
+from storage.queries import (CREATE_AGE_INDEX, CREATE_GENDER_INDEX,
+                             CREATE_VECTOR_INDEX)
 
 
 async def main():

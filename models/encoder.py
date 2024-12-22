@@ -1,4 +1,5 @@
 from sentence_transformers import SentenceTransformer
+
 from config.settings import settings
 
 model = SentenceTransformer(
