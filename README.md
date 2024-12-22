@@ -56,3 +56,8 @@ docker compose up --build
 ```
 
 2. Чтобы выключить проект достаточно прожать сочетание Ctrl+C в терминале где был запущен Docker-compose
+
+## Тесты
+```bash
+PYTHONPATH=. pytest tests/
+```
