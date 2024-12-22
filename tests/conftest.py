@@ -1,12 +1,9 @@
-import asyncio
 
-import aiohttp
 import httpx
 import pytest
 import pytest_asyncio
 from asgi_lifespan import LifespanManager
 from fastapi import FastAPI
-from starlette.testclient import TestClient
 
 from src.app import create_app
 

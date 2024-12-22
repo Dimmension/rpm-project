@@ -1,7 +1,7 @@
 from collections import deque
 from pathlib import Path
-from typing import AsyncGenerator, Any
-from unittest.mock import MagicMock, AsyncMock
+from typing import Any
+from unittest.mock import AsyncMock
 
 import aio_pika
 import msgpack
@@ -11,13 +11,11 @@ from fastapi import FastAPI
 
 from scripts.load_fixture import load_fixture
 from src import bot
-from storage import redis, rabbit, db
-from storage import rabbit as consumer_rabbit, db as consumer_db
+from storage import rabbit, db
+from storage import db as consumer_db
 from tests.mocking.rabbit import MockQueue, MockChannelPool, MockChannel, MockExchange, MockExchangeMessage
-from tests.mocking.redis import MockRedis
 from storage.db import driver
 from contextlib import asynccontextmanager
-from storage.consts import BASE_PRIORITY
 
 @asynccontextmanager
 async def get_neo4j_session():
@@ -49,7 +47,7 @@ def correlation_id():
     return 1
 
 @pytest_asyncio.fixture(autouse=True)
-async def db_session(app: FastAPI, monkeypatch: pytest.MonkeyPatch):
+async def db_session(app: FastAPI, monkeypatch: pytest.MonkeyPatch):  # noqa: F811
     async with driver.session() as session:
         async def override_neo4j_session():
             yield session

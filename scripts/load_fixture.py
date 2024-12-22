@@ -16,7 +16,7 @@ async def load_fixture(files: list[Path], session) -> None:
             )
 
 async def main(paths: list[Path]) -> None:
-    await load_fixture(paths, session)
+    await load_fixture(paths, session)  # noqa: F821
     async with driver.session() as session:
         await load_fixture(paths, session)
 
