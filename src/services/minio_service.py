@@ -1,16 +1,14 @@
-import logging
-from config.settings import settings
 from minio import Minio
 from minio.error import S3Error
 from io import BytesIO
-from src.logger import logger, LOGGING_CONFIG
-from aiogram.types import BufferedInputFile
-# Initialize the Minio client correctly
+
+# Initialize MinIO client
 minio_client = Minio(
-    f'nginx:{settings.NGINX_PORT}',  # Updated to point to Nginx as the proxy to MinIO
-    access_key=settings.MINIO_USERNAME,
-    secret_key=settings.MINIO_PASSWORD,
-    secure=False  # Change to True if Nginx proxies MinIO over HTTPS
+    #'host.docker.internal:9000'
+    'minio:9000',  # Replace with your MinIO server URL
+    access_key='minioadmin',
+    secret_key='minioadmin',
+    secure=False  # Set to False if your MinIO server doesn't use HTTPS
 )
 
 async def upload_photo(bucket_name, object_name, photo_bytes):
@@ -22,54 +20,42 @@ async def upload_photo(bucket_name, object_name, photo_bytes):
         object_name (str): The name of the object (file) to save in the bucket.
         photo_bytes (bytes): The photo content as bytes.
     """
-    logging.config.dictConfig(LOGGING_CONFIG)
     try:
+        # Ensure the bucket exists
         if not minio_client.bucket_exists(bucket_name):
             minio_client.make_bucket(bucket_name)
-            logger.info(f'Bucket "{bucket_name}" was not found; created a new one.')
 
         # Upload the photo as a stream
-        logger.info(f'Uploading {object_name} to bucket - {bucket_name}...')
+        print(f"Uploading {object_name} to bucket '{bucket_name}'...")
         minio_client.put_object(
-            bucket_name=bucket_name,
-            object_name=object_name,
-            data=BytesIO(photo_bytes),
-            length=len(photo_bytes),
-            content_type='image/jpeg'  # Adjust MIME type if needed
+            bucket_name = bucket_name,
+            object_name = object_name,
+            data = BytesIO(photo_bytes),
+            length = len(photo_bytes),
+            content_type = 'image/jpeg'  # Adjust MIME type if needed
         )
-        logger.info('Upload successful!')
+        print('Upload successful!')
     except S3Error as e:
-        logger.warning(f'Error occurred during upload: {e}')
+        print(f'Error occurred: {e}')
+        return
 
-async def get_photo(bucket_name: str, user_id: str) -> BufferedInputFile | None:
+async def get_photo(bucket_name, object_name, download_path):
     """
-    Fetch a photo from a MinIO bucket and return the file as a BufferedInputFile.
+    Fetch a photo from a MinIO bucket and save it locally.
 
     Args:
         bucket_name (str): The name of the bucket.
-        user_id (str): The ID of the user (used to construct the object name).
-
-    Returns:
-        BufferedInputFile | None: The photo file or None if an error occurs.
+        object_name (str): The object name in MinIO (file name).
+        download_path (str): Local path to save the downloaded file.
     """
-    object_name = f"user_{user_id}.jpg"
     try:
-        logger.info(f"Downloading \"{object_name}\" from bucket \"{bucket_name}\"...")
-
-        response = minio_client.get_object(bucket_name=bucket_name, object_name=object_name)
-        photo_file = BytesIO(response.read())
-
-        response.close()
-        response.release_conn()
-
-        photo_file.seek(0)
-
-        logger.info(f'Download of "{object_name}" from bucket "{bucket_name}" successful.')
-
-        return BufferedInputFile(photo_file.read(), filename=object_name)
-
+        print(f"Downloading {object_name} from bucket '{bucket_name}'...")
+        # Use MinIO client to fetch the object
+        minio_client.fget_object(
+            bucket_name=bucket_name,
+            object_name=object_name,
+            file_path=download_path
+        )
+        print(f'Downloaded {object_name} to {download_path}')
     except S3Error as e:
-        logger.warning(f'Error occurred during download of "{object_name}": {e}')
-    except Exception as e:
-        logger.error(f'Unexpected error during download: {e}')
-    return None
+        print(f'Error occurred: {e}')

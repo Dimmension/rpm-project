@@ -1,4 +1,6 @@
 from .base import BaseMessage
+
+
 class LikeMessage(BaseMessage):
     action: str
     user_id: int

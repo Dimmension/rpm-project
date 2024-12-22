@@ -10,10 +10,7 @@ class Settings(BaseSettings):
     DB_NAME: str
     DB_USER: str
     DB_PASSWORD: str
-    MINIO_USERNAME: str
-    MINIO_PASSWORD: str
-    MINIO_BUCKET_NAME: str
-    NGINX_PORT: int
+
     EMBEDDER_MODEL: str = 'cointegrated/rubert-tiny2'
     EMBEDDER_MODEL_DIMMENSION: int = 312
 

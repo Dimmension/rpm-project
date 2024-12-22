@@ -10,7 +10,7 @@ from src.handlers import buttons
 from src.handlers.markups import menu
 from src.handlers.states.auth import AuthGroup, AuthProfileForm
 from src.handlers.command.router import router
-from config.settings import settings
+
 from src.services.minio_service import upload_photo
 from src.utils import validators
 
@@ -37,7 +37,7 @@ async def process_photo(message: Message, state: FSMContext) -> None:
         file_info = await bot.get_file(photo.file_id)
         file_bytes = await bot.download_file(file_info.file_path)
 
-        await upload_photo(settings.MINIO_BUCKET_NAME, file_name, file_bytes.getvalue())
+        await upload_photo('main', file_name, file_bytes.getvalue())
         await state.update_data(
             {
                 'photo': file_name,

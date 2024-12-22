@@ -6,6 +6,8 @@ from consumer.schema.recommendation import RecMessage
 from storage.db import driver
 from storage import queries, consts
 from storage.rabbit import channel_pool
+
+
 async def handle_event_recommendations(message: RecMessage):
     if message['action'] == 'get_recommendations':
         async with driver.session() as session:
@@ -14,7 +16,7 @@ async def handle_event_recommendations(message: RecMessage):
                 parameters={'user_id': message['user_id'], 'top_k': 10}
             )
             recommendations = await results.data()
-            async with channel_pool.acquire() as channel: 
+            async with channel_pool.acquire() as channel:  # type: aio_pika.Channel
                 exchange = await channel.declare_exchange(
                     consts.EXCHANGE_NAME,
                     ExchangeType.DIRECT,
