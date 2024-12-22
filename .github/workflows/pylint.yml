@@ -32,7 +32,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install pytest
         pip install numpy
-        pip install aiohttp
-        pip insatll httpx
+        poetry install
     - name: Pytest
       run: PYTHONPATH=. pytest tests/
