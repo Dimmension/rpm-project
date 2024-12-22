@@ -1,4 +1,5 @@
 import logging
+from config.settings import settings
 from minio import Minio
 from minio.error import S3Error
 from io import BytesIO
@@ -6,9 +7,9 @@ from src.logger import logger, LOGGING_CONFIG
 from aiogram.types import BufferedInputFile
 # Initialize the Minio client correctly
 minio_client = Minio(
-    'nginx:80',  # Updated to point to Nginx as the proxy to MinIO
-    access_key='minioadmin',
-    secret_key='minioadmin',
+    f'nginx:{settings.NGINX_PORT}',  # Updated to point to Nginx as the proxy to MinIO
+    access_key=settings.MINIO_USERNAME,
+    secret_key=settings.MINIO_PASSWORD,
     secure=False  # Change to True if Nginx proxies MinIO over HTTPS
 )
 

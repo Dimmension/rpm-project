@@ -22,7 +22,7 @@ from src.templates.env import render
 from src.services.minio_service import get_photo
 
 async def show_recommendations(message: Message, state: FSMContext) -> None:
-    async with channel_pool.acquire() as channel:  # type: aio_pika.Channel
+    async with channel_pool.acquire() as channel:
         queue: Queue = await channel.declare_queue(
             consts.USER_RECOMMENDATIONS_QUEUE_TEMPLATE.format(
                 user_id=message.from_user.id,
@@ -51,7 +51,6 @@ async def show_recommendations(message: Message, state: FSMContext) -> None:
             except QueueEmpty:
                 await asyncio.sleep(1)
 
-        # TODO:
         await send_msg(
             consts.EXCHANGE_NAME,
             consts.GENERAL_USERS_QUEUE_NAME,
