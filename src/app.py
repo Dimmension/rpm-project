@@ -9,7 +9,7 @@ from starlette_context import plugins
 from starlette_context.middleware import RawContextMiddleware
 
 from config.settings import settings
-from logger import LOGGING_CONFIG, logger
+from src.logger import LOGGING_CONFIG, logger
 from src.api.dat.router import router as data_router
 from src.api.tg.router import router as tg_router
 from src.bg_tasks import background_tasks

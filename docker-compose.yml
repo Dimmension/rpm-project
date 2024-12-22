@@ -107,13 +107,13 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./minio/certs:/etc/nginx/certs
 
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    command:
-      - "--config.file=/prometheus/prometheus_config.yml"
-    ports:
-      - "9090:9090"
-    restart: unless-stopped
-    volumes:
-      - ./prometheus:/prometheus
+  # prometheus:
+  #   image: prom/prometheus
+  #   container_name: prometheus
+  #   command:
+  #     - "--config.file=/prometheus/prometheus_config.yml"
+  #   ports:
+  #     - "9090:9090"
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./prometheus:/prometheus

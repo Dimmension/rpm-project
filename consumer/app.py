@@ -6,7 +6,7 @@ from consumer.handlers.form import handle_event_form
 from consumer.handlers.like import handle_event_like
 from consumer.handlers.recommendation import handle_event_recommendations
 from consumer.metrics import TOTAL_RECEIVED_MESSAGES
-from logger import LOGGING_CONFIG, logger
+from consumer.logger import LOGGING_CONFIG, logger
 from storage.rabbit import channel_pool
 
 

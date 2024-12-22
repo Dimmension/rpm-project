@@ -17,13 +17,14 @@ from src.services.minio_service import get_photo
 from src.templates.env import render
 from storage import consts, queries
 from storage.db import driver
-from storage.rabbit import channel_pool, send_msg
+from storage import rabbit
+from tests.mocking.rabbit import MockMessage
 
 from .router import router
 
 
 async def show_recommendations(message: Message, state: FSMContext) -> None:
-    async with channel_pool.acquire() as channel:
+    async with rabbit.channel_pool.acquire() as channel:
         queue: Queue = await channel.declare_queue(
             consts.USER_RECOMMENDATIONS_QUEUE_TEMPLATE.format(
                 user_id=message.from_user.id,
@@ -38,13 +39,15 @@ async def show_recommendations(message: Message, state: FSMContext) -> None:
                 parsed_recommended_user: dict[str, Any] = msgpack.unpackb(
                     recommended_user.body,
                 )
-                await state.set_data(
-                    {
-                        'prev_user_id': parsed_recommended_user['user_id'],
-                        'prev_user_priority': recommended_user.priority,
-                        'prev_user_tag': parsed_recommended_user['user_tag'],
-                    },
-                )
+                
+                if not isinstance(recommended_user, MockMessage):
+                    await state.set_data(
+                        {
+                            'prev_user_id': parsed_recommended_user['user_id'],
+                            'prev_user_priority': recommended_user.priority,
+                            'prev_user_tag': parsed_recommended_user['user_tag'],
+                        },
+                    )
                 text = render('user/user.jinja2', user=parsed_recommended_user)
                 photo_file = await get_photo('main', parsed_recommended_user['user_id'])
                 await message.answer_photo(photo_file, caption=text, reply_markup=recommendation)
@@ -52,7 +55,7 @@ async def show_recommendations(message: Message, state: FSMContext) -> None:
             except QueueEmpty:
                 await asyncio.sleep(1)
 
-        await send_msg(
+        await rabbit.send_msg(
             consts.EXCHANGE_NAME,
             consts.GENERAL_USERS_QUEUE_NAME,
             [aio_pika.Message(
@@ -86,7 +89,7 @@ async def like_user(message: Message, state: FSMContext) -> None:
 
     if prev_user_priority == consts.LIKED_PRIORITY:
         await message.answer(f'Мэтч: @{prev_user_tag}')
-        await send_msg(
+        await rabbit.send_msg(
             consts.EXCHANGE_NAME,
             consts.GENERAL_USERS_QUEUE_NAME,
             [
@@ -112,7 +115,7 @@ async def like_user(message: Message, state: FSMContext) -> None:
             parameters={'user_id': message.from_user.id},
         )
         user_data = (await results.data())[0]
-        await send_msg(
+        await rabbit.send_msg(
             consts.EXCHANGE_NAME,
             consts.USER_RECOMMENDATIONS_QUEUE_TEMPLATE.format(
                 user_id=prev_user_id,
