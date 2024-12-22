@@ -9,6 +9,8 @@
 - Docker
 - RabbitMQ
 - Aiogram
+- Minio
+- Neo4j
 
 ## Участники и контакты
 Литвинов Егор Витальевич @Egorik_4
@@ -18,44 +20,39 @@
 Никифоров Вадим Юрьевич @dimmmension
 
 ## Разработка решения
-    __Здесь будет ход решения__
+    Очень долго и с итерацией через 3 разных базы данных
 
 
-# Технический блок
-Здесь будут инструкции для воспроизведения проекта.
 
 ## Требования
-- Python3.10
+- Python3.11
 - Docker
 - Poetry
+- RabbitMQ
+- Nginx (в нашем случае т.к. используется Minio)
 
 ## Установка
 1. Склонируйте репозиторий
 ```bash
-git clone https://github.com/Dimmension/rag-tinkoff-sirius.git
+git clone https://github.com/dimmension/rpm-project.git
 ```
+
+2. Соберите образ для БД
+```bash
+docker build -t ml_edition -f Dockerfile.torch .
+```
+
+3. По примеру из **.env.example** создайте .env файл с переменными окружения
+
 
 ## Настройка
 1. Измените конфигурацию .env (если необходимо)
 
 ## Запуск
-1. Запустите docker compose
-```
-docker compose up
-```
-2. Запустить producer
-```
-PYTHONPATH=. python3 src/app.py
-```
-3. Запустить consumer
-```
-PYTHONPATH=. python3 consumer/__main__.py
+1. Запустите проект
+```bash
+docker compose up --build
+// при повторном запуске достаточно команды без флага build
 ```
 
-## Остановка
-1. Остановить docker compose
-```
-docker compose down -v
-```
-2. Остановить producer и consumer
-Ctrl-C
+2. Чтобы выключить проект достаточно прожать сочетание Ctrl+C в терминале где был запущен Docker-compose
