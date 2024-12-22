@@ -18,7 +18,8 @@ from storage.rabbit import channel_pool, send_msg
 from src.handlers import buttons
 from src.handlers.markups import recommendation
 from .router import router
-
+from src.templates.env import render
+from src.services.minio_service import get_photo
 
 async def show_recommendations(message: Message, state: FSMContext) -> None:
     async with channel_pool.acquire() as channel:  # type: aio_pika.Channel
@@ -43,17 +44,9 @@ async def show_recommendations(message: Message, state: FSMContext) -> None:
                         'prev_user_tag': parsed_recommended_user['user_tag'],
                     },
                 )
-                # TODO: fix format
-                text = 'username: {username}, age: {age}, gender: {gender}, description: {description}'
-                await message.answer(
-                    text.format(
-                        username=parsed_recommended_user['username'],
-                        age=parsed_recommended_user['age'],
-                        gender=parsed_recommended_user['gender'],
-                        description=parsed_recommended_user['description'],
-                    ),
-                    reply_markup=recommendation,
-                )
+                text = render('user/user.jinja2', user=parsed_recommended_user)
+                photo_file = await get_photo('main', parsed_recommended_user['user_id'])
+                await message.answer_photo(photo_file, caption=text, reply_markup=recommendation)
                 return
             except QueueEmpty:
                 await asyncio.sleep(1)

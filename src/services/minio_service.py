@@ -3,7 +3,7 @@ from minio import Minio
 from minio.error import S3Error
 from io import BytesIO
 from src.logger import logger, LOGGING_CONFIG
-
+from aiogram.types import BufferedInputFile
 # Initialize the Minio client correctly
 minio_client = Minio(
     'nginx:80',  # Updated to point to Nginx as the proxy to MinIO
@@ -40,20 +40,20 @@ async def upload_photo(bucket_name, object_name, photo_bytes):
     except S3Error as e:
         logger.warning(f'Error occurred during upload: {e}')
 
-async def get_photo(bucket_name, user_id):
+async def get_photo(bucket_name: str, user_id: str) -> BufferedInputFile | None:
     """
-    Fetch a photo from a MinIO bucket and return the file as a BytesIO object.
+    Fetch a photo from a MinIO bucket and return the file as a BufferedInputFile.
 
     Args:
         bucket_name (str): The name of the bucket.
         user_id (str): The ID of the user (used to construct the object name).
 
     Returns:
-        BytesIO: The content of the photo as a BytesIO object, or None if an error occurs.
+        BufferedInputFile | None: The photo file or None if an error occurs.
     """
     object_name = f"user_{user_id}.jpg"
     try:
-        logger.info(f"Downloading {object_name} from bucket '{bucket_name}'...")
+        logger.info(f"Downloading \"{object_name}\" from bucket \"{bucket_name}\"...")
 
         response = minio_client.get_object(bucket_name=bucket_name, object_name=object_name)
         photo_file = BytesIO(response.read())
@@ -61,10 +61,14 @@ async def get_photo(bucket_name, user_id):
         response.close()
         response.release_conn()
 
-        logger.info(f'Downloaded {object_name} from bucket {bucket_name}')
+        photo_file.seek(0)
 
-        return photo_file
+        logger.info(f'Download of "{object_name}" from bucket "{bucket_name}" successful.')
+
+        return BufferedInputFile(photo_file.read(), filename=object_name)
 
     except S3Error as e:
-        logger.warning(f'Error occurred during download: {e}')
-        return None
+        logger.warning(f'Error occurred during download of "{object_name}": {e}')
+    except Exception as e:
+        logger.error(f'Unexpected error during download: {e}')
+    return None

@@ -33,6 +33,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 
     await bot.delete_webhook()
     logger.info('Ending app lifespan')
+    return
 
 
 def create_app() -> FastAPI:
