@@ -6,6 +6,7 @@ from src.handlers.markups import recommendation
 from unittest.mock import call
 from src.templates.env import render
 
+
 @pytest.mark.parametrize(
     ("predefined_queue",),
     [

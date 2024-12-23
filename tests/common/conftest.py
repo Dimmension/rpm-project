@@ -1,78 +1,55 @@
+import asyncio
 from collections import deque
+import contextlib
 from pathlib import Path
-from typing import Any
+from typing import Any, AsyncGenerator
 from unittest.mock import AsyncMock
 
 import aio_pika
 import msgpack
+from neo4j import AsyncTransaction
 import pytest
 import pytest_asyncio
-from fastapi import FastAPI
 
 from scripts.load_fixture import load_fixture
 from src import bot
 from storage import rabbit, db
-from storage import db as consumer_db
 from tests.mocking.rabbit import MockQueue, MockChannelPool, MockChannel, MockExchange, MockExchangeMessage
 from storage.db import driver
-from contextlib import asynccontextmanager
 
-@asynccontextmanager
-async def get_neo4j_session():
+
+@pytest_asyncio.fixture(autouse=True)
+async def db_session(monkeypatch: pytest.MonkeyPatch) -> AsyncGenerator[AsyncTransaction, None]:
     async with driver.session() as session:
-        try:
-            yield session
-        finally:
-            await driver.close()
+        tx = await session.begin_transaction()
 
-@pytest_asyncio.fixture()
-async def db_session(app: FastAPI):
-    async with driver.session() as session:
-        async def override_neo4j_session():
-            yield session
+        @contextlib.asynccontextmanager
+        async def overrided_session():
+            yield tx
 
-        app.dependency_overrides[get_neo4j_session] = override_neo4j_session
+        monkeypatch.setattr(db.driver, 'session', overrided_session)
 
-        yield session
+        yield tx
+        await session.close()
 
-    await driver.close()
+
+@pytest.fixture(scope="session")
+def event_loop():
+    policy = asyncio.get_event_loop_policy()
+    loop = policy.new_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest_asyncio.fixture()
 async def _load_seeds(db_session, seeds: list[Path]) -> None:
     await load_fixture(seeds, db_session)
 
-@pytest.fixture
-def correlation_id():
-    return 1
-
-@pytest_asyncio.fixture(autouse=True)
-async def db_session(app: FastAPI, monkeypatch: pytest.MonkeyPatch):  # noqa: F811
-    async with driver.session() as session:
-        async def override_neo4j_session():
-            yield session
-
-        monkeypatch.setattr(consumer_db, "driver", session)
-        monkeypatch.setattr(db, "driver", session)
-
-        app.dependency_overrides[get_neo4j_session] = override_neo4j_session
-
-        yield session
-
-    await driver.close()
-
-
-
-# @pytest.fixture(autouse=True)
-# def _mock_redis(monkeypatch: pytest.MonkeyPatch) -> None:
-#     monkeypatch.setattr(redis, 'redis_storage', MockRedis())
-#     yield
-
 
 @pytest.fixture(autouse=True)
 def mock_bot_dp(monkeypatch: pytest.MonkeyPatch) -> AsyncMock:
     mock = AsyncMock()
-    monkeypatch.setattr(bot, 'dp', mock) # bot.dp -> mock
+    monkeypatch.setattr(bot, 'dp', mock)
     return mock
 
 
@@ -82,11 +59,11 @@ def mock_exchange() -> MockExchange:
 
 
 @pytest_asyncio.fixture()
-async def _load_queue(monkeypatch: pytest.MonkeyPatch, predefined_queue: Any, correlation_id, mock_exchange: MockExchange):
-
+async def _load_queue(monkeypatch: pytest.MonkeyPatch, predefined_queue: Any, mock_exchange: MockExchange):
     queue = MockQueue(deque())
+
     if predefined_queue is not None:
-        await queue.put(msgpack.packb(predefined_queue), 1)
+        await queue.put(msgpack.packb(predefined_queue))
 
     channel = MockChannel(queue=queue, exchange=mock_exchange)
     pool = MockChannelPool(channel=channel)

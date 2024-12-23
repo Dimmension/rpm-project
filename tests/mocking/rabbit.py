@@ -74,8 +74,8 @@ class MockQueue:
     def iterator(self) -> MockQueueIterator:
         return MockQueueIterator(queue=self.queue)
 
-    async def put(self, value: bytes, correlation_id) -> None:
-        self.queue.append(MockMessage(body=value, correlation_id=correlation_id))
+    async def put(self, value: bytes) -> None:
+        self.queue.append(MockMessage(body=value))
 
 
 class MockMessageProcess:
@@ -93,7 +93,6 @@ class MockMessageProcess:
 @dataclass
 class MockMessage:
     body: bytes
-    correlation_id: str
 
     def process(self) -> MockMessageProcess:
         return MockMessageProcess()
@@ -101,7 +100,6 @@ class MockMessage:
 
 class MockExchange(AsyncMock):
     ...
-
 
 
 class MockExchangeMessage(aio_pika.Message):

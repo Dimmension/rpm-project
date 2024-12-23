@@ -56,45 +56,45 @@ services:
       retries: 5
       timeout: 5s
 
-  producer:
-    build:
-      dockerfile: Dockerfile
-      context: .
-    command: bash -c "python3 scripts/setup_db.py && python3 src/app.py"
-    ports:
-      - "8001:8001"
-    volumes:
-      - .:/code
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-      db:
-        condition: service_healthy
-    stop_signal: SIGINT
+  # producer:
+  #   build:
+  #     dockerfile: Dockerfile
+  #     context: .
+  #   command: bash -c "python3 scripts/setup_db.py && python3 src/app.py"
+  #   ports:
+  #     - "8001:8001"
+  #   volumes:
+  #     - .:/code
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #     minio:
+  #       condition: service_healthy
+  #     db:
+  #       condition: service_healthy
+  #   stop_signal: SIGINT
 
-  consumer:
-    build:
-      dockerfile: Dockerfile
-      context: .
-    command: python3 consumer
-    ports:
-      - "8010:8010"
-    volumes:
-      - .:/code
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-      db:
-        condition: service_healthy
-    stop_signal: SIGINT
+  # consumer:
+  #   build:
+  #     dockerfile: Dockerfile
+  #     context: .
+  #   command: python3 consumer
+  #   ports:
+  #     - "8010:8010"
+  #   volumes:
+  #     - .:/code
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #     minio:
+  #       condition: service_healthy
+  #     db:
+  #       condition: service_healthy
+  #   stop_signal: SIGINT
 
   nginx:
     image: nginx

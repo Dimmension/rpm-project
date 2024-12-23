@@ -6,7 +6,7 @@ from neo4j import AsyncResult
 from consumer.schema.recommendation import RecMessage
 from storage import consts, queries
 from storage.db import driver
-from storage.rabbit import channel_pool
+from storage import rabbit
 
 
 async def handle_event_recommendations(message: RecMessage):
@@ -17,7 +17,7 @@ async def handle_event_recommendations(message: RecMessage):
                 parameters={'user_id': message['user_id'], 'top_k': 10}
             )
             recommendations = await results.data()
-            async with channel_pool.acquire() as channel: 
+            async with rabbit.channel_pool.acquire() as channel:
                 exchange = await channel.declare_exchange(
                     consts.EXCHANGE_NAME,
                     ExchangeType.DIRECT,

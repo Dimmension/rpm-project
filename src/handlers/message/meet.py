@@ -39,7 +39,7 @@ async def show_recommendations(message: Message, state: FSMContext) -> None:
                 parsed_recommended_user: dict[str, Any] = msgpack.unpackb(
                     recommended_user.body,
                 )
-                
+
                 if not isinstance(recommended_user, MockMessage):
                     await state.set_data(
                         {
