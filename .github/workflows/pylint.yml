@@ -29,6 +29,7 @@ jobs:
         python-version: 3.11.4
     - name: Dependencies installation
       run: |
+        cp config/.env.example config/.env
         python -m pip install --upgrade pip
         pip install pytest
         pip install numpy
