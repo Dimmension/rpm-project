@@ -5,4 +5,4 @@ venv
 minio/certs
 minio/data
 **prometheus/data**
-**neo4j**
+neo4j
