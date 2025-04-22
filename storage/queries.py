@@ -25,6 +25,7 @@ CREATE (u:User {
   username: $username,
   age: $age,
   gender: $gender,
+  city: $city,
 
   description: $description,
   description_embedding: $description_embedding,
@@ -38,7 +39,7 @@ CREATE (u:User {
 });
 """
 
-GET_RECOMMENDATIONS = """
+GET_RECOMMENDATIONS = GET_RECOMMENDATIONS = """
 MATCH (current:User {user_id: $user_id})
 WITH current
 
@@ -60,6 +61,7 @@ WHERE other.user_id <> current.user_id
     properties(current).filter_by_age_max IS NULL OR
     other.age <= properties(current).filter_by_age_max
   )
+  AND other.city = current.city  // Добавляем проверку на совпадение города
 
 WITH current, COUNT(other) + 1 AS cnt_nodes, COLLECT(other.user_id) AS filtered_ids,
 CASE
@@ -83,6 +85,7 @@ RETURN
   node.photo AS photo,
   node.gender AS gender,
   node.age AS age,
+  node.city AS city,
   CASE
     WHEN properties(node).description IS NOT NULL
     THEN properties(node).description ELSE NULL
@@ -90,6 +93,7 @@ RETURN
 ORDER BY priority DESC, score DESC
 LIMIT $top_k;
 """
+
 
 LIKE_USER = """
 MATCH (u:User {user_id: $user_id})
@@ -107,6 +111,7 @@ RETURN
   u.username AS username,
   u.age AS age,
   u.gender AS gender,
+  u.city AS city,
   u.filter_by_gender AS filter_by_gender,
   CASE
     WHEN properties(u).description IS NOT NULL
@@ -135,6 +140,7 @@ RETURN
   u.username AS username,
   u.age AS age,
   u.gender AS gender,
+  u.city AS city,
   CASE
     WHEN properties(u).description IS NOT NULL
     THEN properties(u).description ELSE NULL
@@ -148,6 +154,7 @@ SET
   u.username=$username,
   u.age=$age,
   u.gender=$gender,
+  u.city=$city,
 
   u.description=$description,
   u.description_embedding=$description_embedding,

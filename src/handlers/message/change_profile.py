@@ -116,6 +116,34 @@ async def capture_username(message: Message, state: FSMContext) -> None:
 
 
 async def _process_username(message: Message, state: FSMContext) -> None:
+    await state.set_state(EditProfileForm.city)
+
+    markup = InlineKeyboardMarkup(
+        inline_keyboard=[[buttons.no_changes]]
+    )
+    await message.answer(
+        f'Текущий город: {await state.get_value("city")}',
+        markup=markup,
+    )
+
+
+@router.callback_query(
+    F.data == buttons.NO_CHANGES_CALLBACK_MSG,
+    EditProfileForm.city,
+)
+async def capture_age_no_changes_callback(callback: CallbackQuery, state: FSMContext) -> None:
+    await _process_city(callback.message, state)
+
+#a
+@router.message(EditProfileForm.username)
+async def capture_city(message: Message, state: FSMContext) -> None:
+
+
+    await state.update_data(city=message.text)
+    await _process_city(message, state)
+
+
+async def _process_city(message: Message, state: FSMContext) -> None:
     await state.set_state(EditProfileForm.age)
 
     markup = InlineKeyboardMarkup(
@@ -133,7 +161,7 @@ async def _process_username(message: Message, state: FSMContext) -> None:
 )
 async def capture_age_no_changes_callback(callback: CallbackQuery, state: FSMContext) -> None:
     await _process_age(callback.message, state)
-
+#a
 
 @router.message(EditProfileForm.age)
 async def capture_age(message: Message, state: FSMContext) -> None:

@@ -5,6 +5,7 @@ class EditProfileForm(StatesGroup):
     photo = State()
     username = State()
     age = State()
+    city = State()
     gender = State()
     description = State()
     filter_by_age = State()

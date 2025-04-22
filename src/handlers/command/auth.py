@@ -73,8 +73,16 @@ async def process_age(message: Message, state: FSMContext) -> None:
         return
 
     await state.update_data(age=message.text)
-    await state.set_state(AuthProfileForm.gender)
+    await state.set_state(AuthProfileForm.city)
 
+
+    await message.answer('*Введите ваш город с заглавной буквы (если название города состоит из нескольких слов, через тире: Санкт-Петербург и.т.п.)')
+
+@router.message(AuthProfileForm.city)
+async def process_city(message: Message, state: FSMContext) -> None:
+
+    await state.update_data(city=message.text)
+    await state.set_state(AuthProfileForm.gender)
     markup = InlineKeyboardMarkup(
         inline_keyboard=[[buttons.masculine, buttons.feminine]],
     )
@@ -82,7 +90,6 @@ async def process_age(message: Message, state: FSMContext) -> None:
         '*Выберите ваш пол',
         reply_markup=markup,
     )
-
 
 @router.callback_query(
     F.data.in_({buttons.FEMININE_CALLBACK_MSG, buttons.MASCULINE_CALLBACK_MSG}),

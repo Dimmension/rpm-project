@@ -8,6 +8,7 @@ class FormMessage(BaseMessage):
     photo: str
     username: str
     age: int
+    city: str
     gender: str
     description: str | None
     filter_by_gender: str
