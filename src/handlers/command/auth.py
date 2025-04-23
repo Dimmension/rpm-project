@@ -90,13 +90,29 @@ async def process_age(message: Message, state: FSMContext) -> None:
 )
 async def process_gender(callback: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(gender=callback.data)
+    await state.set_state(AuthProfileForm.city)
+
+    await callback.message.answer('*Введите ваш город с заглавной буквы (если название города состоит из нескольких слов, через тире: Санкт-Петербург и.т.п.)')
+
+
+@router.message(AuthProfileForm.city)
+async def capture_city(message: Message, state: FSMContext) -> None:
+    valid_msg = validators.valid_city(message.text)
+    if valid_msg:
+        await message.answer(valid_msg)
+        return
+    await state.update_data(city=message.text)
+    await _process_city(message, state)
+
+
+async def _process_city(message: Message, state: FSMContext) -> None:
     await state.set_state(AuthProfileForm.description)
 
     markup = InlineKeyboardMarkup(
         inline_keyboard=[[buttons.skip]]
     )
 
-    await callback.message.answer(
+    await message.answer(
         'Введите описание о себе',
         reply_markup=markup,
     )

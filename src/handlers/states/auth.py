@@ -12,6 +12,7 @@ class AuthProfileForm(StatesGroup):
     username = State()
     age = State()
     gender = State()
+    city = State()
     description = State()
     filter_by_age = State()
     filter_by_gender = State()

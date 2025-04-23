@@ -25,6 +25,7 @@ CREATE (u:User {
   username: $username,
   age: $age,
   gender: $gender,
+  city: $city,
 
   description: $description,
   description_embedding: $description_embedding,
@@ -44,6 +45,7 @@ WITH current
 
 MATCH (other:User)
 WHERE other.user_id <> current.user_id
+  AND other.city = current.city
   AND (
     current.filter_by_gender = 'all' OR
     other.gender = current.filter_by_gender
@@ -83,6 +85,7 @@ RETURN
   node.photo AS photo,
   node.gender AS gender,
   node.age AS age,
+  node.city AS city,
   CASE
     WHEN properties(node).description IS NOT NULL
     THEN properties(node).description ELSE NULL
@@ -107,6 +110,7 @@ RETURN
   u.username AS username,
   u.age AS age,
   u.gender AS gender,
+  u.city AS city,
   u.filter_by_gender AS filter_by_gender,
   CASE
     WHEN properties(u).description IS NOT NULL
@@ -135,6 +139,7 @@ RETURN
   u.username AS username,
   u.age AS age,
   u.gender AS gender,
+  u.city AS city,
   CASE
     WHEN properties(u).description IS NOT NULL
     THEN properties(u).description ELSE NULL
@@ -148,6 +153,7 @@ SET
   u.username=$username,
   u.age=$age,
   u.gender=$gender,
+  u.city=$city,
 
   u.description=$description,
   u.description_embedding=$description_embedding,

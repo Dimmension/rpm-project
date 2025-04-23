@@ -185,6 +185,38 @@ async def capture_gender_callback(callback: CallbackQuery, state: FSMContext) ->
 
 
 async def _process_gender(message: Message, state: FSMContext) -> None:
+    await state.set_state(EditProfileForm.city)
+
+    user_city = await state.get_value('city')
+    markup = InlineKeyboardMarkup(
+        inline_keyboard=[[buttons.no_changes]],
+    )
+
+    await message.answer(
+        f'Текущий город: {user_city}',
+        reply_markup=markup,
+    )
+
+@router.callback_query(
+    F.data == buttons.NO_CHANGES_CALLBACK_MSG,
+    EditProfileForm.city,
+)
+async def capture_city_no_changes_callback(callback: CallbackQuery, state: FSMContext) -> None:
+    await _process_city(callback.message, state)
+
+
+@router.message(EditProfileForm.city)
+async def capture_city(message: Message, state: FSMContext) -> None:
+    valid_msg = validators.valid_city(message.text)
+    if valid_msg:
+        await message.answer(valid_msg)
+        return
+
+    await state.update_data(city=message.text)
+    await _process_city(message, state) 
+
+
+async def _process_city(message: Message, state: FSMContext) -> None:
     await state.set_state(EditProfileForm.description)
 
     user_description = await state.get_value('description')
