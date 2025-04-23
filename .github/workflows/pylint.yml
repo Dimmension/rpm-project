@@ -47,6 +47,7 @@ jobs:
         pip install poetry
         pip install pytest_asyncio
         poetry install
+        pip install -r requirements.txt
     - name: Creating DB indexes
       run: DB_HOST=localhost PYTHONPATH=. python3 scripts/setup_db.py
     - name: Pytest
