@@ -9,6 +9,7 @@ class FormMessage(BaseMessage):
     username: str
     age: int
     gender: str
+    city: str
     description: str | None
     filter_by_gender: str
     filter_by_age_min: int | None

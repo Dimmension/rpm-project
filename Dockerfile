@@ -1,6 +1,4 @@
-# FROM python:3.11:ML_edition
 FROM ml_edition
-
 
 ENV PYTHONPATH=/code
 WORKDIR code

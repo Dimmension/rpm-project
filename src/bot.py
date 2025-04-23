@@ -9,12 +9,14 @@ from config.settings import settings
 from src.handlers.command.router import router as command_router
 from src.handlers.message.router import router as message_router
 
+
 class CustomKeyBuilder(KeyBuilder):
     def __init__(self, prefix: str = "fsm"):
         self.prefix = prefix
-        
+
     def build(self, key: str, destiny: str) -> str:
         return f"{self.prefix}:{key}:{destiny}"
+
 
 storage = RedisStorage(
     redis=Redis(

@@ -13,9 +13,15 @@ def valid_username(username: str) -> str | None:
 
 def valid_age(age: str) -> str | None:
     if not bool(re.match(src.consts.AGE_REGEXP, age)):
-        return src.consts.AGE_ERORR_MSG
+        return src.consts.AGE_ERROR_MSG
     if int(age) not in range(src.consts.MIN_AGE, src.consts.MAX_AGE):
-        return src.consts.AGE_ERORR_MSG
+        return src.consts.AGE_ERROR_MSG
+    return None
+
+
+def valid_city(city: str) -> str | None:
+    if not bool(re.match(src.consts.CITY_REGEXP, city)):
+        return src.consts.CITY_ERROR_MSG 
     return None
 
 
